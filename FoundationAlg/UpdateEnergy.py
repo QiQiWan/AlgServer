@@ -28,6 +28,7 @@ class EnergyMethodSolver(object):
         self.Ppl = self.GetPressureFunction(LRSide.LeftSide, PressureType.Pp)
         self.Ppr = self.GetPressureFunction(LRSide.RightSide, PressureType.Pp)
         self.BoreHole = foundationPit.BoreHole
+        self.hm = hm
 
     @staticmethod
     def init_symbol():
@@ -123,11 +124,11 @@ class EnergyMethodSolver(object):
         return func * self.z / L
 
     # Splice deformation function
-    def PolynomialFunction(self, sym, hm=8):
+    def PolynomialFunction(self, sym):
         w = 0
         coeffs = []
         index = 1
-        for i in range(hm):
+        for i in range(self.hm):
             coeff = symbols(f'{sym}_{index}')
             w += coeff * self.z ** i
             index += 1 
@@ -207,7 +208,7 @@ class EnergyMethodSolver(object):
         soilLayerIndex = 0 # 表示开始积分指定地层
         while SBottom < L:
             soilLayer = self.BoreHole.Soils[soilLayerIndex]
-            topPressure = self.FoundationPit.CalTopPressure(side, PressureType.Pa, soilLayerIndex)
+            topPressure = self.FoundationPit.cal_top_pressure(side, PressureType.Pa, soilLayerIndex)
             topDepth = self.BoreHole.Soils[soilLayerIndex]['interval']['top']
             P0 = (topPressure + soilLayer['soil'].gamma * (self.z - topDepth)) * soilLayer['soil'].K0
             Pacr = (topPressure + soilLayer['soil'].gamma * (self.z - topDepth)) * soilLayer['soil'].Ka
@@ -227,10 +228,10 @@ class EnergyMethodSolver(object):
         if side == LRSide.RightSide:
             PpLim = self.FoundationPit.PplimWr
         SBottom = H
-        soilLayerIndex = self.FoundationPit.GetSoilLayer(SBottom)
+        soilLayerIndex = self.FoundationPit.get_soil_layer(SBottom)
         while SBottom < L:
             soilLayer = self.BoreHole.Soils[soilLayerIndex]
-            topPressure = self.FoundationPit.CalTopPressure(side, PressureType.Pp, soilLayerIndex, H)
+            topPressure = self.FoundationPit.cal_top_pressure(side, PressureType.Pp, soilLayerIndex, H)
             P0 = (topPressure + soilLayer['soil'].gamma * self.z) * soilLayer['soil'].K0
             Ppcr = (topPressure + soilLayer['soil'].gamma * self.z) * soilLayer['soil'].Ka
             if soilLayer['interval']['bottom'] > L:
@@ -272,13 +273,13 @@ class EnergyMethodSolver(object):
         dsar = [0] + ds + [H2] + [L2]
         supportCount = self.FoundationPit.SupportCount
 
-        print(dsal)
-        print(dsar)
+        # print(dsal)
+        # print(dsar)
         Ns = self.Ns
         NEA = self.NEA
         # 计算坑中坑土压力参数
-        wl, CSet =  self.PolynomialFunction('B', 12)# wl多项式参数列表
-        wr, BSet = self.PolynomialFunction('C', 12)
+        wl, CSet =  self.PolynomialFunction('B')# wl多项式参数列表
+        wr, BSet = self.PolynomialFunction('C')
 
         # 边界条件与变形协调条件
         eqs = self.NullSpaceEquations([wl, wr], [L1, L2], BoundaryCondition.BottomFixed)

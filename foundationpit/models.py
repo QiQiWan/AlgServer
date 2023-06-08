@@ -11,7 +11,7 @@ from django.db import models
 from FoundationAlg import *
 
 class FoundationCalculationTask(models.Model):
-    calID = models.AutoField(primary_key=True)
+    calID = models.CharField(primary_key=True, max_length=12)
     statusChoice = (
         (1, "计算中"),
         (2, "计算完成")
