@@ -14,46 +14,66 @@ from rest_framework.decorators import api_view
 from broadcast_service import broadcast_service
 from FoundationAlg import AlgService
 from Common.response_result import ResponseResult, ResponseMsg
-from models import FoundationCalculationTask
+from .models import FoundationCalculationTask
 
+@api_view(["GET"])
+def hello_world(request):
+    return ResponseResult(data="Hello World").to_response()
 
 @api_view(["POST"])
-def startCaclTask(request):
+def start_calc_task(request):
     if request.method == 'POST':
-        data = request.body
+        data = request.body.decode('utf-8')
         # params = json.loads(data)
-        analysor, result = AlgService.FoundationPitAnalysor(data)
-        if not result:
+        try:
+            analysor = AlgService.FoundationPitAnalysor(data)
+        except Exception as err:
             dic = {
-                "Message" : analysor,
+                "Message" : err,
                 "Status": "Fail"
             }
             return ResponseResult(data=dic).to_response()
+
         # 存数据库
         id = AlgService.FoundationPitAnalysor.GenerateCaclId()
-        foundation_pit = analysor.foundation_pit.ToDict()
-        task = FoundationCalculationTask(id=id, status=1,
-                                         foundation_pit=foundation_pit,
+        task = FoundationCalculationTask(calID=id, status=1,
+                                         foundation_pit=data,
                                          result = '')
         task.save()
         broadcast_service.subscribe('calculate', _save_cal_result)
-        broadcast_service.publish('calculate', id)
+        broadcast_service.publish('calculate', analysor, id)
+        # _save_cal_result(analysor, id)
         dic = {
             "TaskID": id,
-            "Status": "Waiting"
+            "Status": "Waiting"     
         }
         return ResponseResult(data=dic).to_response()
     return ResponseResult(data=ResponseMsg.HTTP_METHOD_ERROR).to_response()
 
+@api_view(["POST"])
+def get_calc_result(request):
+    id = request.data['id']
+    task = FoundationCalculationTask.objects.get(calID=id)
+    status = task.status
+    if status == 1:
+        res = {
+            'status': status,
+            'data': 'The results are still being calculated!'
+        }
+    else:
+        res = {
+            'status': status,
+            'data': task.result
+        }
+    return ResponseResult(data=res).to_response()
+
 def _save_cal_result(analysor: AlgService.FoundationPitAnalysor,
                      id: str):
-    json = analysor.calculate()
-    task = FoundationCalculationTask.objects.get(id=id)
+    json = analysor.calculate(id)
+    task = FoundationCalculationTask.objects.get(calID=id)
     task.status = 2
     task.result = json
+    task.save()
+    broadcast_service.publish('polling')
 
 
-def getCaclResult(request):
-    id = request['id']
-    task = FoundationCalculationTask.objects.get(id=id)
-    return ResponseResult(data=task.result).to_response()
