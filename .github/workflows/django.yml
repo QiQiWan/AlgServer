@@ -16,6 +16,8 @@ env:
   SECRET_KEY: ${{ secrets.SECRET_KEY }} # django随机码
   cache-name: note
 
+permissions:
+  contents: write
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -53,7 +55,7 @@ jobs:
           git init
           git config --global user.email i@eatrice.cn
           git config --global user.name wqw
-          git add *
-          git commit -m "${{ github.event.head_commit.message }} $(date +"%Z %Y-%m-%d %A %H:%M:%S") Updated By Github Actions"
+          git add ./
+          git commit -m "${{ github.event.head_commit.message }} Updated By Github Actions"
           git push -f ubuntu@latex.eatrice.cn:/home/ubuntu/Algserver/algserver.git
           echo "push completed!"
