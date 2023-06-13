@@ -29,8 +29,9 @@ def start_calc_task(request):
             analysor = AlgService.FoundationPitAnalysor(data)
         except Exception as err:
             dic = {
-                "Message" : err,
-                "Status": "Fail"
+                "task_result": err,
+                "task_status": 0,
+                "task_id": ""
             }
             return ResponseResult(data=dic).to_response()
 
@@ -44,8 +45,9 @@ def start_calc_task(request):
         broadcast_service.publish('calculate', analysor, id)
         # _save_cal_result(analysor, id)
         dic = {
-            "TaskID": id,
-            "Status": "Waiting"     
+            "task_result": "The results are still being calculated!",
+            "task_status": 1,
+            "task_id": id
         }
         return ResponseResult(data=dic).to_response()
     return ResponseResult(data=ResponseMsg.HTTP_METHOD_ERROR).to_response()
@@ -57,13 +59,15 @@ def get_calc_result(request):
     status = task.status
     if status == 1:
         res = {
-            'status': status,
-            'data': 'The results are still being calculated!'
+            "task_result" : "The results are still being calculated!",
+            "task_status": status,
+            "task_id": id
         }
     else:
         res = {
-            'status': status,
-            'data': task.result
+            "task_result": task.result,
+            "task_status": status,
+            "task_id": id
         }
     return ResponseResult(data=res).to_response()
 
