@@ -154,7 +154,7 @@ If the input parameters are wrong, the interface will return the wrong informati
     "msg": "success",
     "data": {
         "task_result": ${Wrong information},
-        "task_status": 1,
+        "task_status": 3,
         "task_id": "1686231699"
     }
 }
