@@ -57,5 +57,5 @@ jobs:
           git config --global user.name wqw
           git add ./
           git commit -m "${{ github.event.head_commit.message }} Updated By Github Actions"
-          git push -f ubuntu@latex.eatrice.cn:/home/ubuntu/Algserver/algserver.git
+          git push ubuntu@latex.eatrice.cn:/home/ubuntu/Algserver/algserver.git -f
           echo "push completed!"
