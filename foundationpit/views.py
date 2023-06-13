@@ -25,15 +25,7 @@ def start_calc_task(request):
     if request.method == 'POST':
         data = request.body.decode('utf-8')
         # params = json.loads(data)
-        try:
-            analysor = AlgService.FoundationPitAnalysor(data)
-        except Exception as err:
-            dic = {
-                "task_result": err,
-                "task_status": 0,
-                "task_id": ""
-            }
-            return ResponseResult(data=dic).to_response()
+        analysor = AlgService.FoundationPitAnalysor(data)
 
         # 存数据库
         id = AlgService.FoundationPitAnalysor.GenerateCaclId()
