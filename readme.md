@@ -135,17 +135,27 @@ The form of the input data is shown as:
 Then, the interface will return a response such as:
 
 ```json
-HTTP 200 OK
-Allow: OPTIONS, POST
-Content-Type: application/json
-Vary: Accept
-
 {
     "code": 200,
     "msg": "success",
     "data": {
-        "TaskID": "1686231699",
-        "Status": "Waiting"
+        "task_result": "The results are still being calculated!",
+        "task_status": 1,
+        "task_id": "1686231699"
+    }
+}
+```
+
+If the input parameters are wrong, the interface will return the wrong information,  such as:
+
+```python
+{
+    "code": 200,
+    "msg": "success",
+    "data": {
+        "task_result": ${Wrong information},
+        "task_status": 1,
+        "task_id": "1686231699"
     }
 }
 ```
@@ -162,8 +172,13 @@ If the calculation hasn't been complete yet, the response returned will be like 
 
 ```json
 {
-    "status": 1,
-    "data": "The results are still being calculated!"
+    "code": 200,
+    "msg": "success",
+    "data": {
+        "task_result": "The results are still being calculated!",
+        "task_status": 1,
+        "task_id": "1686231699"
+    }
 }
 ```
 
@@ -174,8 +189,9 @@ If the calculation has been complete, the response returned will be like as:
     "code": 200,
     "msg": "success",
     "data": {
-        "status": 2,
-        "data": "{\"ID\": \"1686235619\", \"L1\": 16.4, \"L2\": 16.4, \"wl\": {\"1\": 0.007261198972142058, \"z\": 0.0007291366928263987, \"z**5\": 3.391830006306565e-07, \"z**7\": 2.6098168856058234e-09, \"z**9\": 1.2012494328893391e-12, \"z**6\": -3.9016428548686715e-08, \"z**3\": -7.3210251908097076e-06, \"z**4\": -1.3660348665277657e-06, \"z**8\": -8.916865102046783e-11, \"z**2\": -2.2720705831797327e-06}, \"wr\": {\"1\": 0.007261198972183578, \"z**9\": 1.201245279231031e-12, \"z**7\": 2.6098073087554897e-09, \"z**5\": 3.391815728702834e-07, \"z\": 0.0007291366928228193, \"z**2\": -2.272053747758917e-06, \"z**4\": -1.3660276298592373e-06, \"z**6\": -3.9016272756241985e-08, \"z**8\": -8.916834001726595e-11, \"z**3\": -7.321043444392424e-06}, \"symbol\": \"z\"}"
+        "task_status": 2,
+        "task_result": "{\"ID\": \"1686235619\", \"L1\": 16.4, \"L2\": 16.4, \"wl\": {\"1\": 0.007261198972142058, \"z\": 0.0007291366928263987, \"z**5\": 3.391830006306565e-07, \"z**7\": 2.6098168856058234e-09, \"z**9\": 1.2012494328893391e-12, \"z**6\": -3.9016428548686715e-08, \"z**3\": -7.3210251908097076e-06, \"z**4\": -1.3660348665277657e-06, \"z**8\": -8.916865102046783e-11, \"z**2\": -2.2720705831797327e-06}, \"wr\": {\"1\": 0.007261198972183578, \"z**9\": 1.201245279231031e-12, \"z**7\": 2.6098073087554897e-09, \"z**5\": 3.391815728702834e-07, \"z\": 0.0007291366928228193, \"z**2\": -2.272053747758917e-06, \"z**4\": -1.3660276298592373e-06, \"z**6\": -3.9016272756241985e-08, \"z**8\": -8.916834001726595e-11, \"z**3\": -7.321043444392424e-06}, \"symbol\": \"z\"}",
+	"task_id": "1686231699"
     }
 }
 ```
