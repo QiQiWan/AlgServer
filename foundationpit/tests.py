@@ -45,8 +45,8 @@ class FoundationCreateTest(TestCase):
 
         res = json.loads(response.content)
         self.assertEqual(res['code'], 200)
-        self.assertEqual(list(res['data'].keys()), ['TaskID', 'Status'])
-        self.cal_ID = res['data']['TaskID']
+        self.assertEqual(list(res['data'].keys()), ['task_result', 'task_status', 'task_id'])
+        self.cal_ID = res['data']['task_id']
 
         # Verify the json input into the API is equal to the model created in tbe API
         task = FoundationCalculationTask.objects.get(calID=self.cal_ID)
