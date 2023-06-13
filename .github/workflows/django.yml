@@ -13,6 +13,7 @@ env:
   SERVER_HOST: ${{ secrets.SERVER_HOST }} # 服务器IP地址
   SERVER_PORT: ${{ secrets.SERVER_PORT }} # 服务器端口
   USER_NAME: ${{ secrets.USER_NAME }} # 服务器用户名
+  SECRET_KEY: ${{ secrets.SECRET_KEY }} # django随机码
   cache-name: note
 
 jobs:
@@ -39,6 +40,7 @@ jobs:
       - run: echo "Install complete!"
       - name: Run Tests
         run: |
+          export SECRET_KEY=${{ env.SECRET_KEY }}
           python manage.py test foundationpit
       - name: add public key and private key
         run: |
