@@ -46,7 +46,7 @@ def start_calc_task(request):
 
 @api_view(["POST"])
 def get_calc_result(request):
-    id = request.data['id']
+    id = request.data['task_id']
     task = FoundationCalculationTask.objects.get(calID=id)
     status = task.status
     if status == 1:
