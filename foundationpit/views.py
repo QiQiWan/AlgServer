@@ -57,7 +57,7 @@ def get_calc_result(request):
         }
     else:
         res = {
-            "task_result": task.result,
+            "task_result": json.loads(task.result),
             "task_status": status,
             "task_id": id
         }
