@@ -28,108 +28,121 @@ The form of the input data is shown as:
 
 ```json
 {
-    "LeftWall": {
-        "L": 16.4,
-        "h": 1,
-        "Material": {
-            "name": "\\u94a2\\u7b4b\\u6df7\\u51dd\\u571f",
-            "gamma": 25,
-            "E": 60000000000.0,
-            "v": 0.3,
-            "G": 23076923076.923077
+    "LeftWall":{
+        "L":16.4,
+        "h":1,
+        "Material":{
+            "name":"\\u94a2\\u7b4b\\u6df7\\u51dd\\u571f",
+            "gamma":25,
+            "E":60000000000,
+            "v":0.3,
+            "G":23076923076.923077
         },
-        "I": 0.08333333333333333,
-        "E": 60000000000.0,
-        "EI": 5000000000.0,
-        "kar": 0.8333333333333334,
-        "G": 23076923076.923077,
-        "H": 12.4
-    },
-    "RightWall": {
-        "L": 16.4,
-        "h": 1,
-        "Material": {
-            "name": "\\u94a2\\u7b4b\\u6df7\\u51dd\\u571f",
-            "gamma": 25,
-            "E": 60000000000.0,
-            "v": 0.3,
-            "G": 23076923076.923077
+        "I":0.08333333333333333,
+        "E":60000000000,
+        "EI":5000000000,
+        "kar":0.8333333333333334,
+        "G":23076923076.923077,
+        "H":12.4
+    }
+,
+    "RightWall":{
+        "L":16.4,
+        "h":1,
+        "Material":{
+            "name":"\\u94a2\\u7b4b\\u6df7\\u51dd\\u571f",
+            "gamma":25,
+            "E":60000000000,
+            "v":0.3,
+            "G":23076923076.923077
         },
-        "I": 0.08333333333333333,
-        "E": 60000000000.0,
-        "EI": 5000000000.0,
-        "kar": 0.8333333333333334,
-        "G": 23076923076.923077,
-        "H": 12.4
-    },
-    "H1": 12.4,
-    "H2": 12.4,
-    "ExcaveDeepth": {
-        "LeftSide": 12.4,
-        "RightSide": 12.4
-    },
-    "SupportCount": 1,
-    "Supports": [{
-        "Material": {
-            "name": "\\u6df7\\u51dd\\u571f\\u652f\\u6491",
-            "gamma": 25000.0,
-            "E": 1000000000.0,
-            "A": 1,
-            "EA": 1000000000.0
-        },
-        "SpaceLength": 46.9,
-        "N": null
-    }],
-    "B": 46.9,
-    "D": 1,
-    "BoreHole": [{
-        "soil": {
-            "name": "Mudstone ",
-            "gamma": 25900.0,
-            "E": 100000000.0,
-            "phi": 30,
-            "c": 300,
-            "varepsilon": 0,
-            "varphi": 0,
-            "alpha": 0,
-            "phid": -1.4156504480240402,
-            "K0": 0.5,
-            "sandy": true,
-            "Ka": 0.33333333333333337,
-            "Kp": 3.0000000000000004
-        },
-        "interval": {
-            "top": 0,
-            "bottom": 16.4
+        "I":0.08333333333333333,
+        "E":60000000000,
+        "EI":5000000000,
+        "kar":0.8333333333333334,
+        "G":23076923076.923077,
+        "H":12.4
+    }
+,
+    "H1":12.4,
+    "H2":12.4,
+    "ExcaveDeepth":{
+        "LeftSide":12.4,
+        "RightSide":12.4
+    }
+,
+    "SupportCount":1,
+    "Supports":[
+        {
+            "Material":{
+                "name":"\\u6df7\\u51dd\\u571f\\u652f\\u6491",
+                "gamma":25000,
+                "E":1000000000,
+                "A":1,
+                "EA":1000000000
+            },
+            "SpaceLength":46.9,
+            "N":null
         }
-    }],
-    "AverageSoil": {
-        "name": "Average soil",
-        "gamma": 25900.0,
-        "E": 100000000.0,
-        "phi": 30.0,
-        "c": 300.0,
-        "varepsilon": 0.0,
-        "varphi": 0.0,
-        "alpha": 0.0,
-        "phid": 0.5242990776014111,
-        "K0": 0.5,
-        "sandy": true,
-        "Ka": 0.33333333333333337,
-        "Kp": 3.0000000000000004
-    },
-    "ds": [0],
-    "Palim": 0.005,
-    "Pplim": 0.05,
-    "PalimWl": 0.08199999999999999,
-    "PplimWl": 0.82,
-    "PalimWr": 0.08199999999999999,
-    "PplimWr": 0.82,
-    "LeftOverLoad": 10000.0,
-    "RightOverLoad": 10000.0,
-    "LeftStrengthLoad": 30000.0,
-    "RightStrengthLoad": 30000.0
+
+    ],
+    "B":46.9,
+    "D":1,
+    "BoreHole":[
+        {
+            "soil":{
+                "name":"Mudstone ",
+                "gamma":25900,
+                "E":100000000,
+                "phi":30,
+                "c":300,
+                "varepsilon":0,
+                "varphi":0,
+                "alpha":0,
+                "phid":-1.4156504480240402,
+                "K0":0.5,
+                "sandy":true,
+                "Ka":0.33333333333333337,
+                "Kp":3.0000000000000004
+            }
+,
+            "interval":{
+                "top":0,
+                "bottom":16.4
+            }
+        }
+    ],
+    "AverageSoil":{
+        "name":"Average soil",
+        "gamma":25900,
+        "E":100000000,
+        "phi":30,
+        "c":300,
+        "varepsilon":0,
+        "varphi":0,
+        "alpha":0,
+        "phid":0.5242990776014111,
+        "K0":0.5,
+        "sandy":true,
+        "Ka":0.33333333333333337,
+        "Kp":3.0000000000000004
+    }
+,
+    "ds":[
+        0
+    ],
+    "Palim":0.005,
+    "Pplim":0.05,
+    "PalimWl":0.08199999999999999,
+    "PplimWl":0.82,
+    "PalimWr":0.08199999999999999,
+    "PplimWr":0.82,
+    "LeftOverLoad":10000,
+    "RightOverLoad":10000,
+    "LeftStrengthLoad":30000,
+    "RightStrengthLoad":30000
 }
+
 ```
 
 Then, the interface will return a response such as:

@@ -8,6 +8,3 @@ urlpatterns = [
     path('GetCalResult', views.get_calc_result, name='GetCalResult'),
     path('HelloWorld', views.hello_world, name='HelloWorld')
 ]
-
-
-
