@@ -50,6 +50,13 @@ class FoundationPitAnalysor(object):
         for item in soilList:
             if item not in queries['BoreHole'][0]:
                 raise Exception(f'The argument {item} in borehole is not Found!')
+        
+        # 检查土层的深度必须大于等于支护桩的长度
+        l = len(queries['BoreHole'])
+        bottom = queries['BoreHole'][l - 1]['interval']['bottom']
+        if bottom < queries['LeftWall']['L'] or bottom < queries['RightWall']['L']:
+            raise Exception(f'The bottom of the soil layers is less than the pile!')
+        
         return True
 
     def CreateFoundation(self, queries: dict):
