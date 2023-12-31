@@ -12,42 +12,40 @@ class FoundationPitAnalysor(object):
         Args:
             queries (str): 基坑计算参数列表，是一个json文件
         """
-        paramsDict = json.loads(queries)
+        params_dict = json.loads(queries)
         try:
-            self.CheckParams(paramsDict)
+            self.check_params(params_dict)
         except Exception as err:
             raise err
-        self.foundation_pit = self.CreateFoundation(paramsDict)
-        
+        self.foundation_pit = self.create_foundation(params_dict)
 
-
-    def CheckParams(self, queries: dict):
+    def check_params(self, queries: dict):
         # 检查构造一个基坑对象所需要的所有参数
-        paraList = ['LeftWall', 'RightWall', 'H1', 'H2', 'ExcaveDeepth',\
+        para_list = ['LeftWall', 'RightWall', 'H1', 'H2', 'ExcaveDeepth',\
                     'SupportCount', 'Supports', 'B', 'D', 'BoreHole', 'AverageSoil',\
                     'ds', 'Palim', 'Pplim', 'PalimWl', 'PplimWl', 'PalimWr', 'PplimWr',\
                     'LeftOverLoad', 'RightOverLoad', 'LeftStrengthLoad', 'RightStrengthLoad']
-        for item in paraList:
+        for item in para_list:
             if item not in queries:
                 raise Exception(f'The argument {item} is not found!')
 
         # 对某些复杂参数进行进一步检查
-        supportList = ['Material', 'SpaceLength', 'N']
-        for item in supportList:
+        support_list = ['Material', 'SpaceLength', 'N']
+        for item in support_list:
             if item not in queries['Supports'][0]:
                 raise Exception(f'The arguement {item} in support is not found!')
 
         # 对两侧的支护桩参数进行检查
-        pileList = ['L', 'h', 'Material', 'I', 'E', 'EI', 'kar', 'G', 'H']
-        for item in pileList:
+        pile_list = ['L', 'h', 'Material', 'I', 'E', 'EI', 'kar', 'G', 'H']
+        for item in pile_list:
             if item not in queries['LeftWall']:
                 raise Exception(f'The argument {item} in LeftWall is not found!')
             if item not in queries['RightWall']:
                 raise Exception(f'The argument {item} in RightWall is not found!')
 
         # 对土层钻孔数据格式进行检查
-        soilList = ['soil', 'interval']
-        for item in soilList:
+        soil_list = ['soil', 'interval']
+        for item in soil_list:
             if item not in queries['BoreHole'][0]:
                 raise Exception(f'The argument {item} in borehole is not Found!')
         
@@ -59,18 +57,18 @@ class FoundationPitAnalysor(object):
         
         return True
 
-    def CreateFoundation(self, queries: dict):
+    def create_foundation(self, queries: dict):
         return FoundationPit.loads(queries)
 
     def calculate(self, id, hm=10):
         self.ID = id
         z = EnergyMethodSolver.init_symbol()
         solver = EnergyMethodSolver(z, self.foundation_pit, hm=hm)
-        _, wl, wr = solver.Solve()
+        _, wl, wr = solver.solve()
         obj = {
             'ID': id,
-            'L1': self.foundation_pit.LeftWall.L,
-            'L2': self.foundation_pit.RightWall.L,
+            'L1': self.foundation_pit.left_wall.L,
+            'L2': self.foundation_pit.right_wall.L,
             'wl': dict(wl.as_coefficients_dict()),
             'wr': dict(wr.as_coefficients_dict()),
             'symbol': str(z)
@@ -94,5 +92,5 @@ class FoundationPitAnalysor(object):
         return obj
 
     @staticmethod
-    def GenerateCaclId():
+    def generate_cacl_id():
         return str(int(time.time()))

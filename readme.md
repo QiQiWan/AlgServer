@@ -178,7 +178,7 @@ Because the duration of calculating may be very long, so the periodic polling is
 The json example of input data is shown as:
 
 ```json
-{"id": "1686223709"}
+{"task_id": "1686223709"}
 ```
 
 If the calculation hasn't been complete yet, the response returned will be like as:
