@@ -28,7 +28,7 @@ def start_calc_task(request):
         analysor = AlgService.FoundationPitAnalysor(data)
 
         # 存数据库
-        id = AlgService.FoundationPitAnalysor.GenerateCaclId()
+        id = AlgService.FoundationPitAnalysor.generate_cacl_id()
         task = FoundationCalculationTask(calID=id, status=1,
                                          foundation_pit=data,
                                          result = '')
@@ -71,5 +71,3 @@ def _save_cal_result(analysor: AlgService.FoundationPitAnalysor,
     task.result = json
     task.save()
     broadcast_service.publish('polling')
-
-

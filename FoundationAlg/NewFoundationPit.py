@@ -17,6 +17,7 @@ class Material(object):
     
     def to_dict(self):
         return self.__dict__.copy()
+    
 
 class ConcreteMaterial(Material):
     """Class of concrete material, inheriate from materials class
@@ -159,7 +160,7 @@ class HorizontalSupport(object):
         self.N = None
     
     def set_material(self, material):
-        """Modefy the mateiral of the support
+        """Modify the mateiral of the support
 
         Args:
             meterial (Material): Target material object
@@ -196,10 +197,10 @@ class BoreHole(object):
             }
             Soils.append(dic)
         Soils = sorted(Soils, key=lambda i: i['interval']['top'])
-        self.Soils = Soils
+        self.soils = Soils
 
     def get_soil_by_deepth(self, deepth):
-        for item in self.Soils:
+        for item in self.soils:
             if item['interval']['top'] <= deepth and \
                 item['interval']['bottom'] >= deepth:
                 return item['soil']
@@ -207,7 +208,7 @@ class BoreHole(object):
 
     def get_average_soil(self) -> SoilMaterial:
         gamma = E = phi = c = varepsilon = varphi = alpha = intervals = thick = 0
-        for item in self.Soils:
+        for item in self.soils:
             intervals = item['interval']['bottom'] - item['interval']['top']
             gamma += item['soil'].gamma * intervals
             E += item['soil'].E * intervals
@@ -236,7 +237,7 @@ class BoreHole(object):
     def to_dict(self):
         obj = self.__dict__.copy()
         obj['Soils'] = []
-        for i in self.Soils:
+        for i in self.soils:
             soil = i.copy()
             soil['soil'] = i['soil'].to_dict()
             obj['Soils'].append(soil)
@@ -302,61 +303,61 @@ class PressureType(Enum):
 class FoundationPit(object):
     """Class of the foundation pit, contains the parameters for calculating the instance.
     """
-    def __init__(self, leftWall: UndergroundDiaphragmWall,
-                 rightWall: UndergroundDiaphragmWall,
+    def __init__(self, left_wall: UndergroundDiaphragmWall,
+                 right_wall: UndergroundDiaphragmWall,
                  H1, H2, supports: List[HorizontalSupport],
-                 supportCount, ds, B, D,
-                 boreHole: BoreHole,
+                 support_count, ds, B, D,
+                 bore_hole: BoreHole,
                  Palim=0.005, Pplim=0.05,
-                 leftOverLoad=0, rightOverLoad=0,
-                 leftStrengthLoad=0, rightStrengthLoad=0) -> None:
+                 left_over_load=0, right_over_load=0,
+                 left_strength_load=0, right_strength_load=0) -> None:
         
-        self.LeftWall = leftWall
-        self.RightWall = rightWall
+        self.left_wall = left_wall
+        self.right_wall = right_wall
         self.H1 = H1
         self.H2 = H2
-        self.ExcaveDeepth = {
+        self.excave_depth = {
             LRSide.LeftSide: H1,
             LRSide.RightSide: H2,
         }
-        self.LeftWall.set_H(H1)
-        self.RightWall.set_H(H2)
+        self.left_wall.set_H(H1)
+        self.right_wall.set_H(H2)
 
-        self.SupportCount = supportCount
-        self.Supports = supports
+        self.support_count = support_count
+        self.supports = supports
 
         self.B = B
         self.D = D
 
-        self.BoreHole = boreHole
-        self.AverageSoil = boreHole.get_average_soil()
-        self.AverageSoil.gamma *= self.D
+        self.bore_hole = bore_hole
+        self.average_soil = bore_hole.get_average_soil()
+        self.average_soil.gamma *= self.D
         
         if ds:
             self.ds = ds
         else:
-            self.ds = [3 * i for i in range(supportCount)]
+            self.ds = [3 * i for i in range(support_count)]
         
         self.update_lim(Palim=Palim, Pplim=Pplim)
-        self.LeftOverLoad = leftOverLoad
-        self.RightOverLoad = rightOverLoad
-        self.LeftStrengthLoad = leftStrengthLoad
-        self.RightStrengthLoad = rightStrengthLoad
+        self.left_over_load = left_over_load
+        self.right_over_load = right_over_load
+        self.left_strength_load = left_strength_load
+        self.right_strength_load = right_strength_load
 
     def get_overload(self, side: LRSide):
         overload = 0
         if side == LRSide.LeftSide:
-            overload = self.LeftOverLoad
+            overload = self.left_over_load
         if side == LRSide.RightSide:   
-            overload = self.RightOverLoad
+            overload = self.right_over_load
         return overload * self.D
     
     def get_strength_load(self, side: LRSide):
         overload = 0
         if side == LRSide.LeftSide:
-            overload = self.LeftStrengthLoad
+            overload = self.left_strength_load
         if side == LRSide.RightSide:
-            overload = self.RightStrengthLoad
+            overload = self.right_strength_load
         return overload * self.D
 
     def cal_top_pressure(self, side: LRSide, type: PressureType, layer: int, H=0):
@@ -364,9 +365,9 @@ class FoundationPit(object):
         if type == PressureType.Pa:
             # 默认主动土压力计算深度从地面开始
             for i in range(layer):
-                soilLayer = self.BoreHole.Soils[i]
-                gamma = soilLayer['soil'].gamma
-                height = soilLayer['interval']['bottom'] - soilLayer['interval']['top']
+                soil_layer = self.bore_hole.soils[i]
+                gamma = soil_layer['soil'].gamma
+                height = soil_layer['interval']['bottom'] - soil_layer['interval']['top']
                 sigma_x += gamma * height
             sigma_x += self.get_overload(side)
 
@@ -374,10 +375,10 @@ class FoundationPit(object):
             sb = H
             index = self.get_soil_layer(H)
             for i in range(index, layer):
-                soilLayer = self.BoreHole.Soils[i]
-                gamma = soilLayer['soil'].gamma
-                height = soilLayer['interval']['bottom'] - sb
-                sb = soilLayer['interval']['bottom']
+                soil_layer = self.bore_hole.soils[i]
+                gamma = soil_layer['soil'].gamma
+                height = soil_layer['interval']['bottom'] - sb
+                sb = soil_layer['interval']['bottom']
                 sigma_x += gamma * height
             sigma_x += self.get_strength_load(side)
 
@@ -385,32 +386,32 @@ class FoundationPit(object):
 
     def get_soil_layer(self, depth):
         index = 0
-        for i in self.BoreHole.Soils:
+        for i in self.bore_hole.soils:
             if i['interval']['top'] <= depth <= i['interval']['bottom']:
                 return index
             index += 1
         return -1
 
     def P0(self, z, side: LRSide, type: PressureType):
-        return self.AverageSoil.K0 * (self.AverageSoil.gamma * z + self.analyse_overload(side, type))
+        return self.average_soil.K0 * (self.average_soil.gamma * z + self.analyse_overload(side, type))
 
     def Pacr(self, z, side: LRSide, pType: PressureType, type=EarthType.Rankine):
-        soil = self.AverageSoil
+        soil = self.average_soil
         overload = self.analyse_overload(side, pType)
         if type == EarthType.Rankine:
             from sympy import sqrt
             Ka = soil.Ka
-            return Ka * (self.AverageSoil.gamma * z + overload) -\
-                2 * self.AverageSoil.c * sqrt(Ka)
+            return Ka * (self.average_soil.gamma * z + overload) -\
+                2 * self.average_soil.c * sqrt(Ka)
         if type == EarthType.Coulomb:
             from sympy import tan, atan, pi
             phi = soil.phi / 180 * pi
-            H = self.ExcaveDeepth[side]
+            H = self.excave_depth[side]
             phi = atan(tan(phi) + soil.c / soil.gamma / H)
-            self.AverageSoil.phid = phi
+            self.average_soil.phid = phi
             phi = phi * 180 / pi
             Ka = soil.get_Ka(phi, type)
-            return Ka * (self.AverageSoil.gamma * z + overload)
+            return Ka * (self.average_soil.gamma * z + overload)
         return 0
 
     def analyse_overload(self, side: LRSide, type: PressureType):
@@ -420,22 +421,22 @@ class FoundationPit(object):
             return self.get_strength_load(side)
 
     def Ppcr(self, z, side: LRSide, pType: PressureType, type=EarthType.Rankine):
-        soil = self.AverageSoil
+        soil = self.average_soil
         overload = self.analyse_overload(side, pType)
         if type == EarthType.Rankine:
             from sympy import sqrt
             Kp = soil.Kp
-            return Kp * (self.AverageSoil.gamma * z + overload) +\
-                2 * self.AverageSoil.c * sqrt(Kp)
+            return Kp * (self.average_soil.gamma * z + overload) +\
+                2 * self.average_soil.c * sqrt(Kp)
         if type == EarthType.Coulomb:
             from sympy import tan, atan, pi
             phi = soil.phi / 180 * pi
-            H = self.ExcaveDeepth[side]
+            H = self.excave_depth[side]
             phi = atan(tan(phi) + soil.c / soil.gamma / H)
-            self.AverageSoil.phid = phi
+            self.average_soil.phid = phi
             phi = phi * 180 / pi
             Kp = soil.get_Kp(phi, type)
-            return Kp * (self.AverageSoil.gamma * z + overload)
+            return Kp * (self.average_soil.gamma * z + overload)
         return 0
 
     def Pa(self, z, w, side: LRSide, alpha=0.9):
@@ -443,9 +444,9 @@ class FoundationPit(object):
         Pacr = self.Pacr(z, side)
         sa = 0
         if side ==LRSide.LeftSide:
-            sa = self.PalimWl
+            sa = self.Pa_lim_wl
         if side == LRSide.RightSide:
-            sa = self.PalimWr
+            sa = self.Pa_lim_wr
         from sympy import exp
         return P0 - (P0 - Pacr) * (w / sa) * exp(alpha * (1 - w / sa))
 
@@ -460,31 +461,31 @@ class FoundationPit(object):
         Ppcr = self.Ppcr(z - H, side)
         sp = 0
         if side ==LRSide.LeftSide:
-            sp = self.PplimWl
+            sp = self.Pp_lim_wl
         if side == LRSide.RightSide:
-            sp = self.PplimWr
+            sp = self.Pp_lim_wr
         from sympy import exp
         return P0 + (Ppcr - P0) * (w / sp) * exp(alpha * (1 - w / sp))
 
     def update_lim(self, Palim=0.005, Pplim=0.05):
-        self.Palim = Palim
-        self.Pplim = Pplim
-        self.PalimWl = self.LeftWall.L * Palim
-        self.PplimWl = self.LeftWall.L * Pplim
-        self.PalimWr = self.RightWall.L * Palim
-        self.PplimWr = self.RightWall.L * Pplim
+        self.Pa_lim = Palim
+        self.Pp_lim = Pplim
+        self.Pa_lim_wl = self.left_wall.L * Palim
+        self.Pp_lim_wl = self.left_wall.L * Pplim
+        self.Pa_lim_wr = self.right_wall.L * Palim
+        self.Pp_lim_wr = self.right_wall.L * Pplim
     
     def __str__(self) -> str:
         return """
         The foundation pit is excavated %dm on the left and %dm on the right,
         The length of left support is %dm, and the right is %dm,
         There are %d supports in it.
-        """ % (self.H1, self.H2, self.LeftWall.L, self.RightWall.L, self.SupportCount)
+        """ % (self.H1, self.H2, self.left_wall.L, self.right_wall.L, self.support_count)
     
     @staticmethod
     def loads(instance: dict):
-        leftWall = UndergroundDiaphragmWall.loads(instance['LeftWall'])
-        rightWall = UndergroundDiaphragmWall.loads(instance['RightWall'])
+        left_wall = UndergroundDiaphragmWall.loads(instance['LeftWall'])
+        right_wall = UndergroundDiaphragmWall.loads(instance['RightWall'])
         H1 = instance['H1']
         H2 = instance['H2']
         supports = [HorizontalSupport.loads(i) for i in instance['Supports']]
@@ -493,27 +494,25 @@ class FoundationPit(object):
         B = instance['B']
         D = instance['D']
         borehole = BoreHole.loads(instance['BoreHole'])
-        Palim = instance['Palim']
-        Pplim = instance['Pplim']
         left_overload = instance['LeftOverLoad']
         right_overload = instance['RightOverLoad']
         left_strength_load = instance['LeftStrengthLoad']
         right_strength_load = instance['RightStrengthLoad']
-        return FoundationPit(leftWall, rightWall, H1, H2, supports,
+        return FoundationPit(left_wall, right_wall, H1, H2, supports,
                                 support_count, ds, B, D, borehole, 
-                                leftOverLoad=left_overload, rightOverLoad=right_overload,
-                                leftStrengthLoad=left_strength_load, 
-                                rightStrengthLoad=right_strength_load)
+                                left_over_load=left_overload, right_over_load=right_overload,
+                                left_strength_load=left_strength_load, 
+                                right_strength_load=right_strength_load)
 
     def to_dict(self):
         obj = self.__dict__.copy()
-        obj['LeftWall'] = self.LeftWall.to_dict()
-        obj['RightWall'] = self.RightWall.to_dict()
-        obj['Supports'] = [i.to_dict() for i in self.Supports]
-        obj['BoreHole'] = self.BoreHole.to_dict()
-        obj['AverageSoil'] = self.AverageSoil.to_dict()
+        obj['LeftWall'] = self.left_wall.to_dict()
+        obj['RightWall'] = self.right_wall.to_dict()
+        obj['Supports'] = [i.to_dict() for i in self.supports]
+        obj['BoreHole'] = self.bore_hole.to_dict()
+        obj['AverageSoil'] = self.average_soil.to_dict()
         obj['ExcaveDeepth'] = {
-            "LeftSide": self.ExcaveDeepth[LRSide.LeftSide],
-            "RightSide": self.ExcaveDeepth[LRSide.RightSide]
+            "LeftSide": self.excave_depth[LRSide.LeftSide],
+            "RightSide": self.excave_depth[LRSide.RightSide]
         }
         return obj
