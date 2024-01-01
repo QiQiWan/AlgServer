@@ -1,0 +1,385 @@
+{% extends 'layout/manage.html' %}
+{% load static %}
+{% block css%}
+
+
+
+<style>
+    .panel-default {
+        margin-top: 10px;
+    }
+
+    .panel-default .panel-heading {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+
+    .panel-body {
+        padding: 0;
+    }
+
+    .title-list {
+        border-right: 1px solid #dddddd;
+        min-height: 500px;
+    }
+
+    .title-list ul {
+        padding-left: 15px;
+    }
+
+    .title-list ul a {
+        display: block;
+        padding: 5px 0;
+    }
+
+    .content {
+        border-left: 1px solid #dddddd;
+        min-height: 600px;
+        margin-left: -1px;
+    }
+
+    .editormd-fullscreen {
+        z-index: 1001;
+    }
+
+    .color-radio label {
+        margin-left: 0;
+        padding-left: 0;
+    }
+
+    .color-radio input[type="radio"] {
+        display: none;
+    }
+
+    .color-radio input[type="radio"]+.cycle {
+        display: inline-block;
+        height: 25px;
+        width: 25px;
+        border-radius: 50%;
+        border: 2px solid #dddddd;
+    }
+
+    .color-radio input[type="radio"]:checked+.cycle {
+        border: 2px solid black;
+    }
+
+    .article-toc {
+        overflow: scroll;
+        overflow-x: hidden;
+        height: 600px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid">
+    <div class="container-fluid">
+
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <div>
+                    <i class="fa fa-book" aria-hidden="true"></i> {{article.title}}
+                </div>
+                <div class="function">
+                    <a type="button" class="btn btn-success btn-xs " id="btn_release">
+                        <i class="fa fa-plus-circle" aria-hidden="true"></i> 发布
+                    </a>
+                    <a class="btn btn-primary btn-xs" data-toggle="modal" data-target="#addModal">
+                        <i class="fa fa-edit" aria-hidden="true"></i> 编辑
+                    </a>
+                    <a type="button" class="btn btn-danger btn-xs" href="/article/{{article.bv_code}}/delete/">
+                        <i class="fa fa-trash" aria-hidden="true"></i> 删除
+                    </a>
+                </div>
+            </div>
+
+        </div>
+        <div class="panel-body">
+            <div class="col-sm-2 title-list">
+                <div class="panel article-toc" id="article-toc" scroll="true">
+
+                </div>
+
+            </div>
+            <div class="col-sm-10 content">
+                <br>
+                <form id="conform">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    {% if field.name == "content" %}
+                    <div id="editor">{{ field }}</div>
+                    {% endif %}
+                    {% endfor %}
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- modal -->
+<div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">编辑文章</h4>
+            </div>
+            <div class="modal-body">
+
+                <form id="editForm">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    {% if field.name != "content" %}
+                    {% if field.name == "is_public" %}
+                    <div class="checkbox">
+                        <label for="{{ field.id_for_label }}">{{field}} {{ field.label }}</label>
+
+                        <span class="error-msg"></span>
+                    </div>
+                    {% else %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{field}}
+                        <span class="error-msg"></span>
+                    </div>
+                    {% endif %}
+
+                    {% endif %}
+                    {% endfor %}
+                </form>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                <button id="btnSubmit" type="button" class="btn btn-primary">保 存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block js%}
+<script>
+    var IMG_UPLOAD_URL = "/markdown/img/{{article.bv_code}}/";
+    console.log(IMG_UPLOAD_URL);
+    $(function () {
+        innitEditor();
+        bindrelease();
+        bind_Edit_submit();
+        addCategory();
+        outline_show();
+        initkeywords();
+
+    });
+    const tocLink = document.querySelectorAll('a[level]')	//目录的每一项就是一个包含level属性的a标签
+    tocLink.forEach((item) => {
+        const level = parseInt(item.getAttribute('level'))
+        item.style.paddingLeft = (level - 1) * 10 + 'px'	//利用level属性的值设置左padding
+    })
+
+    function innitEditor() {
+        editormd('editor', {
+            markdownL: '',
+            placeholder: "请输入内容",
+            height: 600,
+            path: "{% static 'plugins/editor.md-master/lib/'%}",
+            imageUpload: true,
+            imageFormats: ["jpg", "jepg", "png", "gif"],//支持上传的格式
+            imageUploadURL: IMG_UPLOAD_URL,//文件上传的URL
+            emoji: true,
+            taskList: true,
+            tocm: true,         // Using [TOCM]
+            tex: true,                   // 开启科学公式TeX语言支持，默认关闭
+            flowChart: true,             // 开启流程图支持，默认关闭
+            sequenceDiagram: true,       // 开启时序/序列图支持，默认关闭,
+            tocContainer: '#article-toc',	//指定目录容器的id
+        })
+    }
+    const searchInput = document.getElementById('search-input');
+    const autocompleteList = document.getElementById('autocomplete-list');
+
+    // 模拟的关键词数据源
+    let keywords = [];
+    function initkeywords() {//通过ajax同步后端数据库中已经创建果过的关键词
+        $.ajax(
+            {
+                url: "/tag/keywords/get/",
+                type: "GET",
+                dataType: "JSON",
+                success: function (res) {
+                    console.log(res);
+                    if (res.status) {
+                        keywords = [...keywords, ...res.data];//拼接两个数组
+                        console.log(keywords);
+                    }
+                    else {
+                        console.log("获取数据击败");
+                    }
+                }
+            }
+        )
+    }
+    function bindrelease() {
+        $("#btn_release").click(function () {
+            $.ajax(
+                {
+                    url: "/article/{{article.bv_code}}/release/",
+                    type: "POST",
+                    data: $('#conform').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            alert("发布成功");
+
+                        }
+                        else {
+
+                            console.log(res);
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0]);
+                            })
+                        }
+                    }
+                }
+
+            )
+        })
+    }
+    function bind_Edit_submit() {
+        $('#btnSubmit').click(function () {
+
+            $.ajax({
+                url: "/article/{{article.bv_code}}/edit/",
+                type: "POST",
+                data: $('#editForm').serialize(),
+                dataType: "JSON",
+                success: function (res) {
+                    console.log(res);
+                    if (res.status) {
+                        location.href = location.href;//页面刷新
+                        location.reload()
+                        $title = $('#conform').find("id_title");
+                        console.log($title);
+                        $('#addModal').modal('hide');
+                    } else {
+                        $.each(res.error, function (key, value) {
+                            $("#id_" + key).next().text(value[0]);
+                        })
+                    }
+                }
+            })
+
+        })
+    }
+
+
+    function addCategory() {
+        var keyword = $('#search-input').val();
+
+
+        // 创建标签元素
+        var tag = $('<span class="label label-info"></span>').text(keyword);
+
+        // 添加分类属性
+
+        // 创建删除按钮
+        var deleteBtn = $('<button>&times;</button>');
+        deleteBtn.addClass("delete is-small");
+        deleteBtn.click(function () {
+            $(this).parent().remove();
+        });
+
+        // 将标签和删除按钮添加到显示区域
+        tag.append(deleteBtn);
+        $('#categoryTags').append(tag);
+
+        // 清空输入框的值
+        $('#search-input').val('');
+
+        // 关闭模态框
+        $('#addCategoryModal').modal('hide');
+    }
+
+
+
+
+    searchInput.addEventListener('input', () => {
+        const inputText = searchInput.value.trim();
+
+        // 清空自动补全列表
+        autocompleteList.innerHTML = '';
+
+        if (inputText) {
+            const matchingKeywords = keywords.filter(keyword =>
+                keyword.toLowerCase().includes(inputText.toLowerCase())
+            );
+
+            matchingKeywords.forEach(keyword => {
+                const li = document.createElement('li');
+                li.textContent = keyword;
+                autocompleteList.appendChild(li);
+            });
+        }
+    });
+
+    autocompleteList.addEventListener('click', event => {
+        if (event.target.tagName === 'LI') {
+            searchInput.value = event.target.textContent;
+            autocompleteList.innerHTML = '';
+        }
+    });
+
+    $(document).ready(function () {
+        $('id_content').change(function () {
+            var content = $(this).val();
+            $('#catalog').text(content);
+
+            console.log(content);
+        });
+    });
+
+
+
+
+    function outline_show() {
+        $editor = $("#id_content");
+        $("#id_content").change(function () {
+            var content = $(this).val();
+            console.log(content);
+        });
+    }
+    // 绑定input事件的监听器
+    textareaElement.addEventListener('input', function (event) {
+        console.log(textareaElement);
+        console.log("Fef");
+        // 获取textarea的值
+        var markdownContent = event.target.value;
+
+        // 处理Markdown内容，提取标题数据生成大纲
+        var headings = generateOutline(markdownContent);
+        console.log(markdownContent)
+        // 打印大纲
+        console.log(headings);
+    });
+
+    // 解析Markdown获取标题数据并生成大纲
+    function generateOutline(markdownContent) {
+        // 解析Markdown内容，提取标题数据
+        var headings = [];
+
+        // 解析markdownContent，并提取标题数据到headings数组中
+        // 实现代码略，您可以使用现有的Markdown解析库或编写自己的解析器
+
+        // 返回标题数据
+        return headings;
+    }
+
+</script>
+
+{% endblock %}
