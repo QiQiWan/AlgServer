@@ -1,0 +1,376 @@
+{% extends 'layout/manage.html' %}
+{% load static %}
+{% block css%}
+<style>
+    .project {
+        margin-top: 10px;
+    }
+
+    .panel-body {
+        padding: 0;
+        display: flex;
+        flex-direction: row;
+        justify-content: left;
+        align-items: flex-start;
+        flex-wrap: wrap;
+    }
+
+    .panel-body>.item {
+        border-radius: 6px;
+        width: 228px;
+        border: 1px solid #dddddd;
+        margin: 20px 10px;
+
+    }
+
+    .panel-body>.item:hover {
+        border: 1px solid #f0ad4e;
+    }
+
+    .panel-body>.item>.title {
+        height: 104px;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        font-size: 15px;
+        text-decoration: none;
+    }
+
+    .panel-body>.item>.info {
+        padding: 10px 10px;
+
+        display: flex;
+        justify-content: space-between;
+
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
+        color: #8c8c8c;
+
+    }
+
+    .panel-body>.item>.info a {
+        text-decoration: none;
+    }
+
+    .panel-body>.item>.info .fa-star {
+        font-size: 18px;
+    }
+
+    .color-radio label {
+        margin-left: 0;
+        padding-left: 0;
+    }
+
+    .color-radio input[type="radio"] {
+        display: none;
+    }
+
+    .color-radio input[type="radio"]+.cycle {
+        display: inline-block;
+        height: 25px;
+        width: 25px;
+        border-radius: 50%;
+        border: 2px solid #dddddd;
+    }
+
+    .color-radio input[type="radio"]:checked+.cycle {
+        border: 2px solid black;
+    }
+
+    .error-msg {
+        color: red;
+    }
+
+    .label {
+        width: 75px;
+        height: 30px;
+        font-size: 100%;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="container-fluid project">
+    <div style="margin: 10px 0;">
+        <a class="btn btn-primary" data-toggle="modal" data-target="#addModal">
+            <i class="fa fa-plus-circle" aria-hidden="true"></i> 创建文章
+        </a>
+    </div>
+
+    <!-- 对于用户点赞的文章进入文章主页 -->
+    <div class="panel panel-primary">
+        <div class="panel-heading"><i class="fa fa-star" aria-hidden="true"></i> 我点赞的文章</div>
+        <div class="panel-body">
+            {% for item in article_dic.like %}
+            <div class="item">
+                <a href="/article/{{item.bv_code}}/detail/" class="title"
+                    style="background-color: {{ item.get_color_display }};">{{ item.title}}</a>
+                <div class="info">
+                    <div>
+                        <!-- <a href="/article/like/{{item.id}}/">
+                            <i class="fa fa-star" aria-hidden="true" style="color: #f0ad4e;"></i>
+                        </a> -->
+                        <i class="fa fa-star" aria-hidden="true" style="color: #f0ad4e;"></i>
+                        <span>{{item.likes}}</span>
+                    </div>
+                    <div>
+                        <i class="fa fa-user-o" aria-hidden="true"></i>
+                        <span>{{item.author}}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 对于用户发表的文章进入文章的管理页面 -->
+    <div class="panel panel-info">
+        <div class="panel-heading"><i class="fa fa-list" aria-hidden="true"></i> 我发表的文章</div>
+        <div class="panel-body">
+            {% for item in article_dic.create %}
+            <div class="item">
+                <a href="/article/{{item.bv_code}}/manage/" class="title"
+                    style="background-color: {{ item.get_color_display }};">{{ item.title }}</a>
+                <div class="info">
+                    <div>
+                        <a>
+                            <i class="fa fa-star" aria-hidden="true" style="color: #d5d5d5"></i>
+                        </a>
+                        <span>{{ item.likes}}</span>
+                    </div>
+                    <div>
+                        <span><i class="fa fa-clock-o" aria-hidden="true">{{item.create_time|date:"Y-m-d" }}</i></span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+    <!-- Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="myModalLabel">创建文章</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        {% for field in form %}
+                        {% if field.name != "content" %}
+                        {% if field.name == "is_public" %}
+
+                        <div class="checkbox">
+                            <label for="{{ field.id_for_label }}">{{field}} {{ field.label }}</label>
+
+                            <span class="error-msg"></span>
+                        </div>
+                        {% else %}
+                        <div class="form-group">
+                            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                            {{ field }}
+                            <span class="error-msg"></span>
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                    </form>
+                    <!-- 模态框按钮 -->
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategoryModal">
+                        添加分类
+                    </button>
+                    <div id="categoryTags">
+                        <!-- 已添加的分类标签将在这里显示 -->
+
+                    </div>
+                    <!-- 模态框 -->
+                    <div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog"
+                        aria-labelledby="addCategoryModalLabel" aria-hidden="true" style="overflow: scroll;">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="addCategoryModalLabel">添加分类</h5>
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <!-- 输入关键词和选择分类的表单 -->
+                                    <form id="addCategoryForm">
+                                        <div class="form-group">
+                                            <label for="keywordInput">关键词：</label>
+                                            <input type="text" class="form-control" id="search-input"
+                                                placeholder="输入关键词">
+                                            <ul id="autocomplete-list"></ul>
+                                        </div>
+
+                                    </form>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                                    <button type="button" class="btn btn-primary" onclick="addCategory()">添加</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取 消</button>
+                    <button id="btnSubmit" type="button" class="btn btn-primary">创 建</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% endblock %}
+
+    {% block js %}
+
+    <script>
+        $(function () {
+            bindSubmit();
+            initkeywords();
+        })
+        //TODO需要对搜索条目（<li>）进行美化,并将这个关键词搜索用函数包装起来。
+        const searchInput = document.getElementById('search-input');
+        const autocompleteList = document.getElementById('autocomplete-list');
+
+        // 模拟的关键词数据源
+        let keywords = [];
+        function bindSubmit() {
+            $('#btnSubmit').click(function () {
+                var List = tag_get();//获取标签数据
+                if (List.length === 0) {
+                    alert("至少要设置一个标签");
+                    return;
+                }//如果标签为空要给出提示
+                if (List.length > 3) {
+                    alert("标签数量不得超过三个！");
+                    return;
+                }
+                var formData = JSON.stringify($("#addForm").serialize());
+                console.log(JSON.stringify({ "form_data": $("#addForm").serialize(), "tag": List }));
+                $.ajax({
+                    url: "/account/list/",
+                    type: "POST",
+                    //SKILL通过JSON.stringify()的方法。以一个 JavaScript 对象、数组或其他值，然后将其转换为符合 JSON 格式的字符串表示。这个方法会逐步遍历对象的属性并进行转换
+                    data: JSON.stringify({
+                        "form_data": $("#addForm").serializeArray(), // 使用 serializeArray() 方法获取表单数据
+                        "tag": List, // 作为示例，将标签列表直接写入代码中
+                    }),
+                    dataType: "JSON",
+                    contentType: "application/json",
+
+                    success: function (res) {
+                        console.log(res);
+                        if (res.status) {
+                            // location.href = location.href;//页面刷新
+                            location.reload()
+                        } else {
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0]);
+                            })
+                        }
+                    }
+                })
+
+            })
+        }
+        function addCategory() {
+            var keyword = $('#search-input').val();
+
+            List = tag_get();
+            if (List.includes(keyword)) {
+                alert("关键词重复，请重试！！！");
+                return;
+            }
+            // 创建标签元素
+            var tag = $('<span class="label label-info" style="display: inline-block;"></span>').text(keyword);
+
+
+            // 创建删除按钮
+            var deleteBtn = $('<i class="fas fa-times" aria-hidden="true"></i>');
+            deleteBtn.addClass("");
+            deleteBtn.click(function () {
+                $(this).parent().remove();
+            });
+
+            // 将标签和删除按钮添加到显示区域
+            tag.append(deleteBtn);
+            $('#categoryTags').append(tag);
+
+            // 清空输入框的值
+            $('#search-input').val('');
+
+            // 关闭模态框
+            $('#addCategoryModal').modal('hide');
+        }
+
+
+
+        function initkeywords() {//通过ajax同步后端数据库中已经创建果过的关键词
+            $.ajax(
+                {
+                    url: "/tag/keywords/get/",
+                    type: "GET",
+                    dataType: "JSON",
+                    success: function (res) {
+                        console.log(res);
+                        if (res.status) {
+                            keywords = [...keywords, ...res.data];
+                            console.log(keywords);
+                        }
+                        else {
+                            console.log("获取数据击败");
+                        }
+                    }
+                }
+            )
+        }
+        searchInput.addEventListener('input', () => {
+            const inputText = searchInput.value.trim();
+
+            // 清空自动补全列表
+            autocompleteList.innerHTML = '';
+
+            if (inputText) {
+                const matchingKeywords = keywords.filter(keyword =>
+                    keyword.toLowerCase().includes(inputText.toLowerCase())
+                );
+
+                matchingKeywords.forEach(keyword => {
+                    const li = document.createElement('li');
+                    li.textContent = keyword;
+                    autocompleteList.appendChild(li);
+                });
+            }
+        });
+
+        autocompleteList.addEventListener('click', event => {
+            if (event.target.tagName === 'LI') {
+                searchInput.value = event.target.textContent;
+                autocompleteList.innerHTML = '';
+            }
+        });
+        //用于获取用户选择的标签
+        function tag_get() {
+            var categoryTags = document.getElementById("categoryTags");
+            var tags = categoryTags.getElementsByClassName("label");
+
+            var tagList = [];
+            for (var i = 0; i < tags.length; i++) {
+                var tag = tags[i].innerText;
+                tagList.push(tag);
+
+            }
+
+            console.log(tagList);
+            return tagList;
+        }
+    </script>
+    {% endblock %}

@@ -14,9 +14,17 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import include, path
+from django.urls import path, include
+from django.conf.urls.static import static
+from django.conf import settings
+from django.shortcuts import redirect
 
 urlpatterns = [
-    path('foundationpit/', include('foundationpit.urls')),
+    path("", lambda r: redirect("/index")),
     path('admin/', admin.site.urls),
+    path('foundationpit/', include('foundationpit.urls')),
+    path("", include("app01.urls")),
 ]
+urlpatterns += static(
+    settings.MEDIA_URL, document_root=settings.MEDIA_ROOT
+)  # SKILL如果配置media路由这部分代码必须添加。并且注意static和settings的引入包

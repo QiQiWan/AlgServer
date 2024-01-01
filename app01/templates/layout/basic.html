@@ -1,0 +1,183 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bulma.min.css'%}">
+    <link rel="stylesheet" href="{% static 'plugins/font-awesome/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/filter_area.css'%}">
+    <style>
+        .day-mode {
+            background-image: linear-gradient(90deg, #e0c3fc 0%, #8ec5fc 100%);
+            color: #000;
+        }
+
+        .night-mode {
+            background-image: linear-gradient(to bottom, #1a1a1a, #333333);
+            color: beige;
+        }
+
+        .btn-lg,
+        .navbar {
+            background: rgba(235, 231, 231, 0.5);
+        }
+
+        .navbar-start .navbar-item:hover,
+        .navbar-item:hover {
+            background-color: #F5DEB3;
+            color: orange;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .navbar-item img {
+            width: 70px;
+            height: 30px;
+        }
+
+        .navbar-end {
+            margin-right: 30px;
+        }
+    </style>
+    {% block css %} {% endblock %}
+</head>
+
+<body class="day-mode">
+
+
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/index/">
+                <img
+                    src="https://algserver-md-img-1252510405.cos.ap-chengdu.myqcloud.com/%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_20231012172646.jpg" />
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+
+                <a class="navbar-item" href="/index/">
+                    首页
+                </a>
+                <a class="navbar-item" href="/article/statistic/">
+                    文章统计
+                </a>
+            </div>
+
+            {% if username %}
+            <div class="navbar-end">
+
+                <button type="button" class="btn btn-default btn-lg">
+                    <span class="glyphicon glyphicon-sun" aria-hidden="true"></span>模式切换
+                </button>
+                <div class="navbar-item has-dropdown is-hoverable ">
+
+                    <a href="/account/list/" target="_blank" class="navbar-link" data-toggle="dropdown" role="button"
+                        aria-haspopup="true" aria-expanded="false">
+                        {% if username.avatar %}
+                        <img class="avatar_image" src="{{ MEDIA_URL }}{{ username.avatar }}"
+                            style="width: 42px; height: 42px; border-radius: 50%; display: inline-block; margin-right: 5px;">
+                        {% else %}
+                        <img class="avatar_image "
+                            src="https://algserver-md-img-1252510405.cos.ap-chengdu.myqcloud.com/tag_img/DM_20231004172832_001.jpg"
+                            style="width: 42px; height: 42px; border-radius: 50%; display: inline-block; margin-right: 5px;">
+
+                        {% endif %}
+                        <strong>{{username}}</strong>
+                    </a>
+
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item" href="/account/info/">个人中心</a>
+                        <a class="navbar-item" href="/index/">返回主页</a>
+
+                        <hr class="navbar-divider">
+                        <div class="navbar-item">
+                            <a class="navbar-item" href="/logout/">退 出</a>
+                        </div>
+                    </div>
+                    <!-- <a href="/logout/" class="button is-primary">退出</a> -->
+
+                    {% else %}
+                    <button type="button" class="btn  btn-lg">
+                        <span class="glyphicon glyphicon-off" aria-hidden="true"></span> Sun
+                    </button>
+                    <div class="buttons">
+
+                        <a class="button is-primary" href="/register/" target="_blank">
+                            <strong>注册</strong>
+                        </a>
+                        <a class="button is-primary" href="/login/" target="_blank">
+                            <strong>登录</strong>
+                        </a>
+                    </div>
+
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+
+    {% block content %}
+
+    {% endblock%}
+
+    {% block footer %}
+    <footer class="footer">
+        <div class="content has-text-centered">
+            <p>
+                博客底部.
+            </p>
+        </div>
+    </footer>
+    {% endblock %}
+
+</body>
+
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+<script src="{% static 'js/echarts.min.js' %}"></script>
+<script>
+    $(function () {
+        btn_background_switch();
+    })
+    function btn_background_switch() {
+        $('.btn-lg').click(function () {
+
+            $("body").toggleClass("day-mode night-mode");
+            $('.article_pennal').find('article').toggleClass("is-light is-dark").css("display", "none").fadeIn(2000);
+            // 保存背景样式到localStorage
+            var mode = $("body").hasClass("day-mode") ? "day" : "night";
+            localStorage.setItem("backgroundMode", mode);
+        })
+    };
+    $(document).ready(function () {
+        var mode = localStorage.getItem("backgroundMode");
+        if (mode === "night") {
+            $("body").addClass("night-mode").removeClass("day-mode");
+            $('.article_pennal').find('article').addClass("is-dark").removeClass("is-light");
+        }
+    });
+
+    $(document).ready(function () {
+
+        // Check for click events on the navbar burger icon
+        $(".navbar-burger").click(function () {
+
+            // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+            $(".navbar-burger").toggleClass("is-active");
+            $(".navbar-menu").toggleClass("is-active");
+
+        });
+    });
+</script>
+{% block js %}{% endblock %}
+
+</html>

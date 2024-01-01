@@ -1,0 +1,36 @@
+.account {
+    width: 400px;
+    margin-top: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    border: 1px solid #f0f0f0;
+    padding: 10px 30px 30px 30px;
+    -webkit-box-shadow: 5px 10px 10px rgba(0, 0, 0, .05);
+    box-shadow: 5px 10px 10px rgba(0, 0, 0, .05);
+}
+
+/* .account .title {
+    font-size: 25px;
+    font-weight: bold;
+    text-align: center;
+} */
+
+.account .form-group {
+    margin-bottom: 20px;
+}
+
+/* html,
+body {
+    margin: 0;
+    font-family: "PingFang SC", "Microsoft Yahei", sans-serif;
+} */
+
+/* .container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url("https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/1ec3890ac634408db0ffb6e1a409182a~tplv-k3u1fbpfcp-zoom-in-crop-mark:1512:0:0:0.awebp") fixed no-repeat;
+    background-size: cover;
+} */

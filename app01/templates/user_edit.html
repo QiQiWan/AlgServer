@@ -1,0 +1,214 @@
+{% extends 'layout/profile.html' %}
+{% load static %}
+
+{% block title %}
+<li><a href="/account/info/">账号信息</a></li>
+<li class="is-active"><a href="/account/edit/">信息修改</a></li>
+<li><a href="/account/comment_manage/">评论管理</a></li>
+{% endblock %}
+{% block content %}
+<!-- enctype设置使表单可以传输文件 -->
+<form action="/account/edit/" method="post" id="user_edit_form" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="field">
+        <label class="label">{{form.avatar.label}}</label>
+        <div class="control">
+            {{form.avatar}}
+        </div>
+    </div>
+    <div class="field">
+        <label class="label">{{form.username.label}}</label>
+        <div class="control has-icons-left has-icons-right">
+            {{form.username}}
+            <span class="icon is-small is-left">
+                <i class="fas fa-user"></i>
+            </span>
+            <span class="icon is-small is-right">
+                <i class="fas fa-check" id="username_show_isright"></i>
+            </span>
+        </div>
+        <p class="help" id="username_help_text"></p>
+    </div>
+
+    <div class="field">
+        <label class="label">{{form.email.label}}</label>
+        <div class="control has-icons-left has-icons-right">
+            {{form.email}}
+            <span class="icon is-small is-left">
+                <i class="fas fa-envelope"></i>
+            </span>
+            <span class="icon is-small is-right">
+                <i class="fas fa-check " id="email_show_isright"></i>
+            </span>
+        </div>
+        <p id="email_help_text" class="help"></p>
+    </div>
+
+    <div class="field">
+        <label class="label">{{form.mobile.label}}</label>
+        <div class="control has-icons-left has-icons-right">
+            {{form.mobile}}
+            <span class="icon is-small is-left">
+                <i class="fas fa-phone"></i>
+            </span>
+            <span class="icon is-small is-right">
+                <i class="fas fa-check" id="mobile_show_isright"></i>
+            </span>
+        </div>
+        <p class="help" id="mobile_help_text"></p>
+    </div>
+
+    <div class="field">
+        <label class="label">{{form.address.label}}</label>
+        <div class="control has-icons-left has-icons-right">
+            {{form.address}}
+            <span class="icon is-small is-left">
+                <i class="fas fa-home"></i>
+            </span>
+        </div>
+    </div>
+
+    <div class="field">
+        <label class="label">{{form.gender.label}}</label>
+        <div class="control">
+            <div class="select">
+                {{form.gender}}
+            </div>
+        </div>
+    </div>
+
+    <div class="field">
+        <label class="label">{{form.birthday.label}}</label>
+        <div class="control">
+            <input type="date" name="birthday" value="{{form.birthday.value|date:'Y-m-d'}}">
+        </div>
+    </div>
+
+    <div class="field is-grouped">
+        <div class="control">
+            <button class="button is-link">提交</button>
+        </div>
+        <div class="control">
+            <a class="button is-link is-light" href="/account/info/">取消</a>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block js %}
+<script>
+    $(document).ready(function () {
+
+        var HASERROR = false;
+        // 监听邮箱
+        $('#id_email').on('input', function () {
+            var $email = $(this);
+            var email = $email.val();
+            var help_text = $('#email_help_text');
+            var is_right_show = $('#email_show_isright');
+            console.log(help_text);
+            console.log(email)
+            // 进行验证逻辑，根据需要执行相应操作
+            if (isValidEmail(email) && email) {
+                add_class($email, help_text, is_right_show);
+
+            }
+            else if (!email) {
+                del_class($email, help_text, is_right_show);
+            }
+            else {
+                add_class($email, help_text, is_right_show, 0);
+            }
+        });
+        //实时监听用户名的正确性
+        $('#id_username').on('input', function () {
+            var $username = $(this);
+            var username = $username.val();
+            var help_text = $('#username_help_text');
+            var is_right_show = $('#username_show_isright');
+            if (username) {
+                add_class($username, help_text, is_right_show);
+            }
+            else {
+                add_class($username, help_text, is_right_show, 0);
+            }
+        })
+
+
+        //手机号码
+        $('#id_mobile').on('input', function () {
+            var $mobile = $(this);
+            var mobile = $mobile.val();
+            var help_text = $('#mobile_help_text');
+            var is_right_show = $('#mobile_show_isright');
+            if (isValidPhoneNumber(mobile) && mobile) {
+                console.log("right");
+                add_class($mobile, help_text, is_right_show);
+            }
+            else if (!mobile) {
+                del_class($mobile, help_text, is_right_show);
+            }
+            else {
+                console.log("false");
+                add_class($mobile, help_text, is_right_show, 0);
+            }
+
+        })
+
+
+        $('#user_edit_form').on('submit', function (e) {
+
+            // 如果存在错误，阻止表单提交
+            if (HASERROR) {
+                console.log(HASERROR);
+                e.preventDefault();
+                alert('请修复表单中的错误。');
+            }
+        });
+
+
+
+
+        // 验证邮箱地址的函数
+        function isValidEmail(email) {
+            // 在这里添加你的验证逻辑，可以使用正则表达式或其他方式验证邮箱地址的合法性
+            // 示例：使用简单正则表达式进行验证
+            var emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+            return emailRegex.test(email);
+        }
+
+        //验证手机号码的函数
+        function isValidPhoneNumber(phoneNumber) {
+            var phoneRegex = /^1[0-9]{10}$/;
+            return phoneRegex.test(phoneNumber);
+        }
+
+        //用于给表单的校验正确性加入指定样式
+        function add_class(ithis, help_text, is_right_show, is_right = 1) {
+            if (is_right) {
+                HASERROR = false;
+                ithis.removeClass('is-danger').addClass('is-success');;
+                help_text.removeClass('is-danger').addClass('is-success');
+                help_text.text("格式正确");
+                is_right_show.removeClass('fas fa-exclamation-triangle').addClass('fas fa-check');
+            }
+            else {
+                HASERROR = true;
+                ithis.removeClass('is-success').addClass('is-danger');
+                help_text.removeClass('is-success').addClass('is-danger');
+                help_text.text("格式有误");
+                is_right_show.removeClass('fas fa-check').addClass('fas fa-exclamation-triangle');
+            }
+        }
+        function del_class(ithis, help_text, is_right_show) {
+            HASERROR = false;
+            ithis.removeClass('is-success').removeClass('is-danger');
+            help_text.text(" ");
+            is_right_show.removeClass('fas fa-check').removeClass('fas fa-exclamation-triangle');
+
+        }
+    });
+
+
+</script>
+{% endblock %}

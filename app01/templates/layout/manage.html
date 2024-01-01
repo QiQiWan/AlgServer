@@ -1,0 +1,101 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'plugins/bootstrap-3.4.1/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/editor.md-master/css/editormd.min.css' %}">
+    <link rel="stylesheet" href="{% static 'plugins/font-awesome/css/font-awesome.min.css' %}">
+    <link rel="stylesheet" href="{% static 'css/manage.css' %}">
+    {% block css %} {% endblock %}
+</head>
+
+<body>
+
+    <nav class="navbar navbar-av">
+        <div class="container-fluid">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#"><i class="fa fa-align-center" aria-hidden="true" /></i></a>
+            </div>
+
+
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                {% if not status %}
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="/account/list/"><i class="fa fa-bookmark" aria-hidden="true" />
+                            文章管理</i></a>
+                        <!-- <ul class="dropdown-menu">
+                            <li><a href="#">文章列表及操作</a></li>
+                            <li><a href="#">Something else here</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">Separated link</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="#">One more separated link</a></li>
+                        </ul> -->
+                    </li>
+
+
+                </ul>
+                {% else %}
+
+                <ul class="nav navbar-nav">
+                    <li class="dropdown">
+                        <a href="/account/list/" class="dropdown-toggle" data-toggle="dropdown" role="button"
+                            aria-haspopup="true" aria-expanded="false"><i class="fa fa-bookmark" aria-hidden="true" />
+                            {{article.title}}</i><span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="#">文章列表及操作</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="#">文章编写</a></li>
+                    <li><a href="#">文章数据</a></li>
+
+                </ul>
+                {% endif %}
+
+
+                <ul class="nav navbar-nav navbar-right">
+
+                    {% if user %}
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
+                            aria-expanded="false">{{user.username}}<span class="caret"></span></a>
+                        <ul class="dropdown-menu">
+                            <li><a href="/account/info/">个人中心</a></li>
+                            <li><a href="/index/">返回主页</a></li>
+                            <li role="separator" class="divider"></li>
+                            <li><a href="/logout/">退 出</a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li><a href="/login/">登 录</a></li>
+                    <li><a href="/register/">注 册</a></li>
+                    {% endif %}
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% block content %} {% endblock%}
+
+</body>
+
+<script src="{% static 'js/jquery-3.6.0.min.js' %}"></script>
+<script src="{% static 'plugins/editor.md-master/editormd.min.js' %}"></script>
+<script src="{% static 'plugins/bootstrap-3.4.1/js/bootstrap.min.js' %}"></script>
+
+{% block js %}{% endblock %}
+
+</html>

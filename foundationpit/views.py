@@ -13,7 +13,7 @@ from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
 from broadcast_service import broadcast_service
 from FoundationAlg import AlgService
-from Common.response_result import ResponseResult, ResponseMsg
+from common.response_result import ResponseResult, ResponseMsg
 from .models import FoundationCalculationTask
 
 @api_view(["GET"])

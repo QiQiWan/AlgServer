@@ -1,0 +1,149 @@
+{% extends 'layout/basic.html'%}
+{% load static %}
+{% load tag %}
+{% block css %}
+<style>
+    img {
+        width: 100%;
+    }
+
+    .box {
+        background: rgba(235, 231, 231, 0.5);
+        border-radius: 15px;
+    }
+
+    .container {
+        padding-bottom: 20px;
+    }
+</style>
+<link rel="stylesheet" href="{% static 'plugins/daterangepicker/daterangepicker.css' %}">
+<link rel="stylesheet" href="{% static 'css/filter_area.css'%}">
+{% endblock %}
+{% block content %}
+
+<!-- TODO增加面包屑功能，用于返回主页 -->
+<div class=" container">
+    <div class="columns">
+        <div class="column is-8">
+
+            {% for item in queryset %}
+            <div class="box">
+                <h1 class="is-size-5 has-text-weight-bold">
+                    <a href="/article/{{item.bv_code}}/detail/">{{item.title}}</a>
+                </h1>
+                <div class=" is-size-7 has-text-grey-light pt-1 pb-1">
+
+                    <span class="mr-3">作者：{{item.author}}</span>
+                    <span>发布日期：{{item.create_time|date:"Y-m-d"}}</span>
+                </div>
+                <p class="mt-3">{{item.desc|truncatechars:50 }}</p>
+            </div>
+
+            {% endfor %}
+
+            <ul class="pagination">
+                {{ page_string }}
+            </ul>
+        </div>
+
+        <div class="column is-4">
+            {% for item in Sidebar_list %}
+            <div class="box">
+                <h1 class=" is-size-5 title">{{item.title}}</h1>
+                <p>{{ item.get_content|safe }}</p>
+            </div>
+            {% endfor %}
+
+            <div class="box">
+                <h1 class=" is-size-5 title">文章分类</h1>
+                {% all_list request %}
+                <div class=" title" style="font-weight:900; font-size: medium;padding: 5px;margin-left: 8px;">时间筛选</div>
+                <div class="container-fluid" style="margin-top: 20px;">
+                    <div>
+                        <div class="input-group" style="width: 300px;">
+                            <span class="input-group-addon">日期范围</span>
+                            <input id="rangePicker" type="text" class="form-control">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+{% endblock %}
+
+
+{% block js %}
+<script src="{% static 'plugins/daterangepicker/moment.min.js' %}"></script>
+<script src="{% static 'plugins/daterangepicker/daterangepicker.js' %}"></script>
+<script>
+    $(function () {
+        bindClickCheckboxFilter();
+        initDateRangePicker();
+    })
+    //点击筛选checkbox实现链接跳转
+    function bindClickCheckboxFilter() {
+        $('.filter-area ').find(":checkbox").click(function () {
+            location.href = $(this).parent().attr("href");//跳转到a标签指定的页面
+        })
+
+    }
+    function initDateRangePicker() {
+        var options = {
+            // maxDate: moment(),//TODO页面刷新会变成默认值，需要保持为刷新前的值
+            alwaysShowCalendars: true,
+            showWeekNumbers: true,
+            ranges: {
+                '今天': [moment(), moment()],
+                '昨天': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                '最近7天': [moment().subtract(6, 'days'), moment()],
+                '最近30天': [moment().subtract(29, 'days'), moment()],
+                '本月': [moment().startOf('month'), moment().endOf('month')]
+            },
+            locale: {
+                format: 'YYYY-MM-DD',
+                separator: ' 至 ',
+                applyLabel: '确定',
+                cancelLabel: '取消',
+                fromLabel: '开始',
+                toLabel: '结束',
+                customRangeLabel: '自定义',
+                weekLabel: 'W',
+                daysOfWeek: ['一', '二', '三', '四', '五', '六', '日'],
+                monthNames: ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'],
+                firstDay: 1
+            }
+        };
+        $('#rangePicker').daterangepicker(options, function (start, end, label) {
+            // 选择了时间之后，函数自动被触发。
+
+            //获取开始日期和截至日期
+            start = start.format("YYYY-MM-DD");
+            end = end.add(1, 'days').format("YYYY-MM-DD")
+
+            //获取当前的url地址
+            var currentUrl = window.location.href;
+
+            // 创建URL对象
+            var urlObj = new URL(currentUrl);
+
+            // 设置新的start_date和end_date参数值
+            urlObj.searchParams.set("start_date", start);
+            urlObj.searchParams.set("end_date", end);
+            // var url = currentUrl + separator + "start_date=" + encodeURIComponent(start.format("YYYY-MM-DD")) + "&end_date=" + encodeURIComponent(end.add(1, 'days').format("YYYY-MM-DD"));
+            // console.log(url)
+            location.href = urlObj.toString();//页面刷新
+
+        });
+    }
+</script>
+{% endblock %}

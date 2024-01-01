@@ -1,0 +1,126 @@
+{% extends "layout/basic.html" %}
+{% load static %}
+{% block css%}
+<style>
+    .container_showtag {
+        height: 206px;
+        /* width: 650px; */
+        padding: 20px;
+        position: relative;
+        border: 1px solid rgba(0, 0, 0, 0.2);
+        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        margin: 20px;
+    }
+
+    .siderbar {
+        border-radius: 2px;
+        box-shadow: 0 1px 3px hsla(0, 0%, 7%, .1);
+    }
+
+    .level {
+        height: 206px;
+        border-radius: 2px;
+        box-shadow: 0 1px 3px hsla(0, 0%, 7%, .1);
+        margin-top: 20px;
+        background-color: pink;
+
+    }
+
+    .article_list {
+        /* border: 1px solid rgba(0, 0, 0, 0.2); */
+        margin-right: 20px;
+        padding: 30px;
+        background: #fff;
+        border-radius: 2px;
+        box-shadow: 0 1px 3px hsla(0, 0%, 7%, .1);
+        box-sizing: border-box;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+
+<div class="container">
+    <div class="container_showtag col-sm-9">
+        <article class="media">
+            <figure class="media-left">
+                <p class="image is-128x128">
+                    <img
+                        src="https://algserver-md-img-1252510405.cos.ap-chengdu.myqcloud.com/tag_img/DM_20231004172832_001.jpg">
+                </p>
+            </figure>
+            <div class="media-content">
+                <div class="content">
+                    <p>
+                        <strong>{{tag.tagname}}</strong>
+                        <br>
+                        {{tag.desc}}
+                    </p>
+                </div>
+            </div>
+        </article>
+    </div>
+
+    <nav class="level is-mobile col-sm-2 ">
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">
+                    <font style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: large;">
+                        讨论数量
+                    </font>
+                </p>
+                <p class="title">3,456</p>
+            </div>
+        </div>
+        <div class="level-item has-text-centered">
+            <div>
+                <p class="heading">
+                    <font style="font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: large;">
+                        文章数量
+                    </font>
+                </p>
+                <p class="title">123</p>
+            </div>
+        </div>
+    </nav>
+
+
+    <div class="col-sm-8 article_list">
+        {% for item in queryset %}
+        <div class="box">
+            <h1 class="is-size-5 has-text-weight-bold">
+                <a href="/article/{{item.bv_code}}/detail/">{{item.title}}</a>
+            </h1>
+            <div class=" is-size-7 has-text-grey-light pt-1 pb-1">
+
+                <span class="mr-3">作者：{{item.author}}</span>
+                <span>发布日期：{{item.create_time|date:"Y-m-d"}}</span>
+            </div>
+            <p class="mt-3">{{item.desc|truncatechars:50 }}</p>
+        </div>
+        {% endfor %}
+
+        <ul class="pagination">
+            {{ page_string }}
+        </ul>
+    </div>
+    <!-- 用于放侧边栏 -->
+    <div class="col-sm-3 sidebar ">
+        {% for item in Sidebar_list %}
+        <div class="box">
+            <h1 class=" is-size-5 title">{{item.title}}</h1>
+            <p>{{ item.get_content|safe }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+
+
+{% endblock %}
+{% block js %}
+{% endblock %}
+{% block footer %}
+{% endblock %}

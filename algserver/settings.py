@@ -21,7 +21,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']
+# SECRET_KEY = os.environ['SECRET_KEY']
+# SECRET_ID = os.environ['SECRET_ID']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -31,6 +32,7 @@ ALLOWED_HOSTS = ['0.0.0.0', '127.0.0.1', 'alg.eatrice.cn']
 # Application definition
 
 INSTALLED_APPS = [
+    "simpleui",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'foundationpit.apps.FoundationpitConfig'
+    'foundationpit.apps.FoundationpitConfig',
+    'app01.apps.App01Config',
 ]
 
 MIDDLEWARE = [
@@ -49,6 +52,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "app01.middlewares.auth.AuthMiddleware",
 ]
 
 ROOT_URLCONF = 'algserver.urls'
@@ -64,6 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                "django.template.context_processors.media",
             ],
         },
     },
@@ -118,13 +123,36 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = "app01/static/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_URL = "/media/"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# 无需登录可以访问的路由
+WHITE_REGEX_URL_LIST = [
+    "/register/",
+    "/login/",
+    "/img/code/",
+    "/index/",
+    "/admin/",
+    "/foundationpit/",
+    "/media/"
+]
+
+# 配置搜索引擎端口
+ELASTICSEARCH_DSL = {
+    "default": {"hosts": "localhost:9200"},  # Elasticsearch 主机和端口
+}
 
 REST_FRAMEWORK = {
-    'EXCEPTION_HANDLER': 'Common.interceptor.custom_exception_handler', # 添加自定义的异常处理函数
+    'EXCEPTION_HANDLER': 'common.interceptor.custom_exception_handler', # 添加自定义的异常处理函数
 }
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass

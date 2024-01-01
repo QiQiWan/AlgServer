@@ -1,0 +1,665 @@
+{% extends 'layout/basic.html' %}
+{% load static %}
+{% block css %}
+
+<link rel="stylesheet" href="{% static 'plugins/editor-md/css/editormd.preview.min.css' %}">
+<style>
+    img {
+        max-width: auto;
+        /* 设置最大宽度为父容器宽度 */
+        height: 654px;
+        /* 高度自适应，保持宽高比 */
+    }
+
+    #textarea-container {
+        border: 2px solid #ccc;
+    }
+
+    #textarea-container textarea {
+        padding: 10px;
+        border: none;
+        outline: none;
+
+        /* 可选，用于去除默认的焦点边框 */
+    }
+
+
+    /* .div {
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+    } */
+
+    .left-avatar {
+        margin-right: 10px;
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        background-color: #304659;
+        color: white;
+        text-align: center;
+        line-height: 30px;
+        border-radius: 50%;
+    }
+
+    .item {
+        margin-top: 20px;
+    }
+
+    .right-info {
+        padding-left: 35px;
+    }
+
+    .right-info .desc .msg {
+        display: inline-block;
+        padding-right: 20px;
+        color: #8c8c8c;
+    }
+
+    .child {
+        padding-left: 55px;
+    }
+
+    html {
+        scroll-behavior: smooth;
+
+    }
+
+
+
+    button {
+        background: none;
+        border: none;
+        padding: 0;
+        font: inherit;
+        cursor: pointer;
+        color: inherit;
+        outline: inherit;
+    }
+
+
+    .container {
+        width: 75%;
+        margin-left: 20px;
+        padding-bottom: 100px;
+    }
+
+
+    .shadowbox {
+        margin: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        /* 添加阴影效果 */
+        border: 1px solid #b8c9d1;
+        /* 添加细边框 */
+        padding: 30px;
+    }
+
+    .test {
+        position: fixed;
+        width: 20%;
+        top: 40px;
+        /* 距离顶部的距离*/
+        right: 3px;
+        /* 距离右侧的距离 */
+        width: 300px;
+        /* 侧边栏的宽度 */
+        height: 60%;
+        /* 侧边栏的高度，充满整个页面高度 */
+        background-color: #f0f0f0;
+        margin: 20px;
+        padding: 7px;
+        /* 侧边栏的背景颜色 */
+        overflow: scroll;
+        overflow-x: hidden;
+    }
+
+    /* .test {
+        width: 30vw;
+        height: 30vh;
+        background-color: red;
+    } */
+
+
+    .markdown-toc-list {
+        padding: 10px 12px;
+        font-size: 14px;
+    }
+
+    /* .markdown-toc-list ul {
+        border: 1px solid #b8c9d1; 
+
+        background-color: beige;
+
+    }   */
+
+    .test li {
+        list-style-type: none;
+        /* background-color: aquamarine; */
+        margin-left: 20px;
+        /* 设置左侧缩进距离 */
+        padding-left: 10px;
+        /* 设置内容左侧的内边距 */
+        border-left: 1px solid #ccc;
+        /* 添加虚线边框 */
+    }
+
+    .test a:hover {
+        background-color: rgba(235, 231, 231, 0.5);
+        ;
+    }
+
+    #article-toc,
+    .test,
+    .comment_content,
+    .comment_input,
+    #previewMarkdown,
+    .article_pennal {
+        background: rgba(235, 231, 231, 0.5);
+        border-radius: 15px;
+    }
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+
+<!-- <div class="panel article-toc test2" id="article-toc">
+</div> -->
+
+
+<div class="test">
+    <h2 style="height: 32px; line-height: 32px; font-weight: 700;">目录</h2>
+    <div class="panel article-toc test2" id="article-toc">
+    </div>
+</div>
+
+
+
+<!-- 查看回复评论模态框-->
+<div class="modal fade" id="replymodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                        aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="reply_num"></h4>
+            </div>
+            <!-- <div class="modal-header" id="main_comment">
+
+            </div> -->
+            <div class="modal-body">
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="top"></div>
+<div class="container">
+
+    <div style=" padding-top: 10px;  padding: 10px;">
+        {% for item in tagname_list %}
+        <span class="tag is-primary is-large"><i class="fa fa-tags" aria-hidden="true" /><a
+                href="/article/{{item.id}}/taglist/"
+                style="text-decoration: none; color: inherit;">{{item.tags}}</a></i></span>
+        {% endfor %}
+    </div>
+    <!-- 文章简介面板 -->
+    <div class="tile is-ancestor article_pennal" style="padding-top: 10px;">
+        <div class="tile is-vertical is-15">
+            <div class="tile is-parent">
+                <article class="tile is-child notification  is-light ">
+                    <p class="title">{{article.title}}</p>
+                    <p class="subtitle"><span class="mr-3">作者：{{article.author}}</span>
+                        <span>发布日期：{{article.update_time|date:"Y-m-d"}}</span>
+                    </p>
+                    <div class="content">
+                        {{article.desc}}
+                    </div>
+                    {% if not is_like %}
+                    <button class="button is-primary is-light" id="btn_like">
+                        <i class="fa fa-thumbs-up" id="like_font" style=" color: black;">点赞 <span
+                                id="likes">{{article.likes}}</span></i>
+                    </button>
+                    {% else %}
+                    <button class="button is-primary" id="btn_like">
+                        <i class=" fa fa-thumbs-up" id="like_font" style=" color: pink;">点赞<span
+                                id="likes">{{article.likes}}</span></i></i>
+                    </button>
+                    {% endif %}
+
+                    <button class="button is-primary">
+                        <i class="fa fa-commenting " aria-hidden="true" /><a href="#section2">评论</a>
+                        <span class="comment_num">{{article.comment_num}} </span>
+                        </i>
+                    </button>
+                </article>
+
+
+            </div>
+        </div>
+    </div>
+
+    <div id="textarea-container">
+        <div id="previewMarkdown">
+            <textarea>{{ article.content }}</textarea>
+        </div>
+    </div>
+
+
+
+
+
+    <div class="container-fluid shadowbox ">
+        <form id="Comment_Form">
+            <div class="field has-addons column is-8">
+                <div class="control is-expanded">
+                    <!-- <input class="textarea comment_input" name="keyword" placeholder="发布一条评论吧"> -->
+                    <textarea class="textarea is-primary comment_input" name="keyword" placeholder="发布一条评论吧"></textarea>
+                    <input class=" button is-primary" id="btn_submit" type="button" value="发 布">
+                </div>
+            </div>
+        </form>
+
+
+
+
+        <div class="comment-list" id="section2">
+
+        </div>
+        {% for item in comments %}
+        <div class="recordTemplate">
+
+            <div class="item clearfix" id={{item.id}} username={{item.user.username}}>
+                <div class="left-avatar">{{item.user.username|first}}</div>
+                <span class="username">{{item.user}}</span>
+                <div class="right-info">
+                    <pre class="comment_content">{{item.content}}</pre>
+                    <div class="desc">
+                        <div class="msg">
+                            <button class="button is-primary is-light is-outlined is-small btn_comment_like "
+                                id="{{item.id}}" type="Comment">
+                                <i class="fa fa-thumbs-up" style=" color: black;">点赞 <span
+                                        id="likes">{{item.likes}}</span></i>
+                            </button>
+                        </div>
+                        <div class="msg">
+                            <i class="fa fa-clock-o" aria-hidden="true"></i>
+                            <span class="date">{{item.create_time|date:"Y-m-d H:i:s"}}</span>
+                        </div>
+                        <div class="msg">
+                            <button class="toggleButton">
+                                <i class="fa fa-commenting-o" aria-hidden="true"></i> 回复
+                            </button>
+                        </div>
+                        <div class="msg">
+                            <button class="modalbutton" id="{{item.id}}">此处显示回复信息的模态框</button>
+                        </div>
+                        <div class="inputContainer" style="display: none;">
+                            <form class="reply_form" id="{{item.id}}" type="comment_to_reply">
+                                {% csrf_token %}
+                                <input class="input is-success" id="reply_content" type="text"
+                                    placeholder="在此输入回复......">
+                                <input class="button is-primary reply" id="{{item.id}}" type="button" value="回 复">
+                                <!-- <button id="btn_reply" class="is-primary"></button> -->
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        {% endfor %}
+
+
+
+
+    </div>
+</div>
+
+<div class="hide" id="Template">
+    <div class="item clearfix">
+        <div class="left-avatar"></div>
+        <span class="username"></span>
+        <div class="right-info">
+            <pre class="comment_content"></pre>
+            <div class="desc">
+                <div class="msg">
+                    <button class="button is-primary is-light btn_comment_like" type="Comment">
+                        <i class="fa fa-thumbs-up" style=" color: black;">点赞 <span id="likes" class="likes"></span></i>
+                    </button>
+                </div>
+                <div class="msg">
+                    <i class="fa fa-clock-o" aria-hidden="true"></i>
+                    <span class="date"></span>
+                </div>
+                <div class="msg">
+                    <button class="toggleButton">
+                        <i class="fa fa-commenting-o" aria-hidden="true"></i> 回复
+                    </button>
+                </div>
+                <div class="msg">
+                    <button class="modalbutton">此处显示回复信息的模态框</button>
+                </div>
+                <div class="inputContainer" style="display: none;">
+                    <form class="reply_form" id="comment_to_reply">
+                        {% csrf_token %}
+                        <input class="input is-success" id="reply_content" type="text" placeholder="在此输入回复......">
+                        <input class="button is-primary reply" type="button" value="回 复">
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+{% endblock %}
+
+{% block footer %}
+<footer class="footer">
+    <div class="content has-text-centered">
+        <p>
+            <a href="#top">返回顶部</a>
+        </p>
+    </div>
+</footer>
+
+
+
+{% endblock %}
+
+
+
+{% block js %}
+
+
+<script src="{% static 'plugins/editor-md/editormd.min.js' %}"></script>
+<script src="{% static 'plugins/editor-md/lib/marked.min.js' %}"></script>
+<script src="{% static 'plugins/editor-md/lib/prettify.min.js' %}"></script>
+<script src="{% static 'plugins/editor-md/lib/raphael.min.js' %}"></script>
+<script src="{% static 'plugins/editor-md/lib/underscore.min.js' %}"></script>
+<script src="{% static 'plugins/editor-md/lib/sequence-diagram.min.js' %}"></script>
+<script src="{% static 'plugins/editor-md/lib/flowchart.min.js' %}"></script>
+<script src="{% static 'plugins/editor-md/lib/jquery.flowchart.min.js' %}"></script>
+<script src="{% static 'js/bulma_modal_show' %}"></script>
+<script>
+
+
+
+    $(function () {
+
+        initPreivewMarkdown();//markdown预览功能初始化
+        initMarkdownImg();//对文档图片作出优化
+        bindlike_Text();//文章点赞功能
+        bindComment();//文章的评论功能
+        bindmodal();//回复评论模态框内容展示
+        bindreply();//文章的评论回复功能
+        bindlike_Comment();//评论点赞功能
+        setupToggleButtons();//回复评论出现按钮
+
+
+
+    })
+    // $(window).scroll(function () {
+    //     var sidebar = $('.article-toc');
+    //     var contentOffset = $('.container').offset().top; /* 主内容距离顶部的偏移量 */
+
+    //     if ($(window).scrollTop() > contentOffset) {
+    //         sidebar.addClass('fixed-sidebar');
+    //     } else {
+    //         sidebar.removeClass('fixed-sidebar');
+    //     }
+    // });
+
+    function setupToggleButtons() {
+        const toggleButtons = Array.from(document.getElementsByClassName('toggleButton'));
+        const inputContainers = Array.from(document.getElementsByClassName('inputContainer'));
+
+        toggleButtons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                const inputContainer = inputContainers[index];
+                inputContainer.style.display = inputContainer.style.display === 'none' ? 'block' : 'none';
+            });
+        });
+    }
+    //markdown图片尺寸修改修改
+    function initMarkdownImg() {
+        $("#previewMarkdown").find("img").each(function () {
+            $(this).css("width", "65%");
+            $(this).css("height", "65%");
+            $(this).wrap("<div align='center'></div>");
+        })
+
+
+    }
+    //markdown预览初始化
+    function initPreivewMarkdown() {
+        editormd.markdownToHTML("previewMarkdown", {
+            markdown: '',
+            htmlDecode: "style,script,iframe",
+            emoji: "true", crossDomainUpload: true,          // Enable/disable Cross-domain upload
+            // Cross-domain upload callback url
+            toc: true,           // Table of contents
+            tocm: true,          // Using [TOCM], auto create ToC dropdown menu
+            tocTitle: "目录",             // for ToC dropdown menu button
+            tocDropdown: true,          // Enable/disable Table Of Contents dropdown menu
+            // Custom Table Of Contents Container Selector
+            // Said from H1 to create ToC
+            // Open the HTML tag identification 
+            // Enable parse page break [========]
+            atLink: true,           // for @link
+            emailLink: true,           // for email address auto link
+            taskList: true,          // Enable Github Flavored Markdown task lists
+            emoji: true,          // :emoji: , Support Github emoji, Twitter Emoji (Twemoji);
+            // Support FontAwesome icon emoji :fa-xxx: > Using fontAwesome icon web fonts;
+            // Support Editor.md logo icon emoji :editormd-logo: :editormd-logo-1x: > 1~8x;
+            tex: true,          // TeX(LaTeX), based on KaTeX
+            flowChart: true,          // flowChart.js only support IE9+
+            sequenceDiagram: true,          // sequenceDiagram.js only support IE9+
+            previewCodeHighlight: true,
+            tocContainer: '#article-toc',	//指定目录容器的id
+
+
+        });
+    }
+
+    function create_newComment(nodeDict) {
+        var $item = $("#Template").find('.item').clone(true);
+        console.log(nodeDict);
+        $item.find('.left-avatar').html(nodeDict.username[0].toUpperCase());
+        $item.find('pre').html(nodeDict.content);
+        $item.find('.username').html(nodeDict.username);
+        $item.find('.likes').html(0);
+        $item.find('.date').html(nodeDict.datetime);
+        $item.find(".modalbutton").attr({ id: nodeDict.id });
+        $item.find(".reply_form").attr({ id: nodeDict.id, type: "comment_to_reply" });
+        $item.find(".reply").attr({ id: nodeDict.id });
+        $item.find(".btn_comment_like").attr({ id: nodeDict.id })
+        $item.attr({ id: nodeDict.id, username: nodeDict.username });
+        return $item;
+    }
+    function Comment_Place(nodeDict) {
+
+        $('.comment-list').prepend(create_newComment(nodeDict));//SKILL使用prepend函数使得评论加载评论的最上面
+        setupToggleButtons();//新添加的评论重新加载回复函数
+    }
+    function bindlike_Text() {
+
+
+        $("#btn_like").click(function () {
+
+            var like_font = document.querySelector('#like_font')//获取图标选择器
+            var likes = document.querySelector('#likes')//获取点赞数量的选择器
+            var btn_like = document.querySelector('#btn_like')//获取点赞按钮的选择器
+            $.ajax({
+                url: "/article/like/{{article.id}}/",
+                type: "POST",
+                data: { "action": "clike" },
+                dataType: "JSON",
+                success: function (res) {
+                    likes.innerText = res.likes;//更新点赞数量
+                    if (res.status)//如果点赞成功
+                    {
+                        btn_like.className = "button is-primary";//按钮颜色变深
+                        like_font.style.color = "pink";
+                    }
+                    else {//如果取消点赞                       
+                        btn_like.className = "button is-primary is-light";//按钮颜色变浅
+                        like_font.style.color = "black";
+                    }
+
+                }
+
+            })
+        })
+    }
+    //TODO发表评论还有所欠缺，需要实现ajax与createnode联合‘
+    //TODO新添加的评论元素无法点击回复和模态框
+    function bindComment() {
+        $("#btn_submit").click(function () {
+            $.ajax({
+                url: "/comment/post/",
+                type: "POST",
+                data: $('#Comment_Form').serialize(),
+                dataType: "JSON",
+                success: function (data) {
+                    if (data.status) {
+                        console.log("ture")
+                        // 构建新的评论元素,将新的评论插入到评论列表的开头
+                        Comment_Place(data.dic);
+                        //清空评论输入框
+                        $(".comment_input").val("");
+                        //评论数量加一
+                        document.querySelector('.comment_num').innerText = data.comment_num
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error("评论提交失败:", error);
+
+                }
+
+            })
+        })
+    }
+    function bindmodal() {
+        $(".modalbutton").click(function () {
+            // 获取模态框元素的 ID 值
+            const modalId = $(this).attr("id");
+            // $('#replymodal').modal('show');
+            modalurl = "/comment/reply_get/?id=" + modalId;
+            console.log(modalurl);
+            $.ajax({
+                url: modalurl,
+                type: "GET",
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        console.log(res);
+                        $('#replymodal').modal('show');
+                        $('h4#reply_num').html("共有" + res.count + "条评论");
+                        // $('div#main_comment').append(create_newComment(res.dict));
+                        $('div.modal-body').html(res.html);
+
+                        setupToggleButtons();//回复评论出现按钮
+                        bindreply();//文章的评论回复功能
+                        bindlike_Comment();//评论点赞功能
+                    }
+
+                }
+
+            })
+
+        })
+    }
+    function bindreply() {
+        $(".reply").click(function () {
+            var $form = $(this).parent();//获取对应表单
+            type = $form.attr('type')//获取评论类型
+            var $content = $form.find('#reply_content')
+            comment_id = $form.attr('id');//获取对应评论的id
+            content = $content.val();//获取表单中输入的内容
+            userid = $form.attr('user')
+
+            $.ajax({
+                url: "/comment/reply_post/",
+                type: "POST",
+                data: {
+                    "id": comment_id,
+                    "content": content,
+                    "type": type,
+                    "userid": userid,
+                },//获取评论的id和内容
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        alert("评论发表成功！");
+                        $content.val(" ");//清空输入框
+                        if (type != "comment_to_reply") {
+                            //找到指定容器
+                            var container = $('#' + type + '.comment_reply_container');
+                            //在后端获取构造回复评论
+                            container.append(res.html);
+                            //新添加内容要重新绑定事件
+                            setupToggleButtons();//回复评论出现按钮
+                            bindreply();//文章的评论回复功能
+                            bindlike_Comment();//评论点赞功能
+                            console.log(res);
+                        }
+                        console.log(res);
+                    } else {
+                        alert("发表失败！！！");
+                    }
+                }
+            })
+
+        })
+    }
+
+    //TODO实现评论点赞功能
+    function bindlike_Comment() {
+        $(".btn_comment_like").click(function () {
+            var commentButton = $(this);
+            comment_id = commentButton.attr("id"); //获取评论id
+            console.log(comment_id);
+            type = commentButton.attr("type");
+            like_element = $(this).find("#likes");
+
+            $.ajax({
+                url: "/comment/like/{}/".replace("{}", comment_id),
+                type: "POST",
+                data: { "type": type },
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        //使用按钮元素的引用来查找 like 元素
+                        // var like_element = commentButton.find("#likes");
+
+                        console.log(like_element.length);//输出找到元素的数量
+                        //点赞数量作出变化
+                        like_element.text(res.likes);
+                        console.log(res);
+                        //展示点赞成功提示框
+                        // alert(res.message)
+
+                    }
+                }
+            })
+        })
+    }
+
+
+
+</script>
+{% endblock %}

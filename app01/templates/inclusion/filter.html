@@ -1,0 +1,30 @@
+<style>
+    .filter-area .item .title {
+        font-size: medium;
+    }
+
+    label {
+        background: rgba(235, 231, 231, 0.5);
+        border-radius: 5px;
+        border: 1px, solid, black;
+        width: 50px;
+        height: 30px;
+        text-align: center;
+        padding: 5px;
+    }
+</style>
+
+<div class="panel-body filter-area">
+    {% for row in filter_list %}
+    <div class="item">
+        <div class="title">标签筛选</div>
+        <div class="check-list">
+            <!-- <a href="#"><input type="checkbox" checked /><label>全部</label></a> -->
+            {% for item in row %}
+            {{ item }}
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    {{list}}
+</div>
