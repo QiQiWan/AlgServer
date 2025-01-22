@@ -7,24 +7,29 @@ LastEditors: EatRice
 Description: 
 '''
 
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework.permissions import AllowAny
+from django.views.decorators.csrf import csrf_exempt
 import json
 import time
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view, permission_classes
+from common.response_result import ResponseResult, ResponseMsg
 from broadcast_service import broadcast_service
 from FoundationAlg import AlgService
-from common.response_result import ResponseResult, ResponseMsg
 from .models import FoundationCalculationTask
 
+
 @api_view(["GET"])
-@permission_classes([AllowAny])  # 允许任何人访问
+@permission_classes([AllowAny])
+@authentication_classes([])  # 确保没有身份验证
+@csrf_exempt  # 防止 CSRF 影响匿名 API 访问
 def hello_world(request):
     return ResponseResult(data="Hello World").to_response()
 
+
 @api_view(["POST"])
-@permission_classes([AllowAny])  # 允许任何人访问
+@permission_classes([AllowAny])
+@authentication_classes([])
+@csrf_exempt
 def start_calc_task(request):
     if request.method == 'POST':
         data = request.body.decode('utf-8')
@@ -48,8 +53,11 @@ def start_calc_task(request):
         return ResponseResult(data=dic).to_response()
     return ResponseResult(data=ResponseMsg.HTTP_METHOD_ERROR).to_response()
 
+
 @api_view(["POST"])
-@permission_classes([AllowAny])  # 允许任何人访问
+@permission_classes([AllowAny])
+@authentication_classes([])
+@csrf_exempt
 def get_calc_result(request):
     id = request.data['taskId']
     task = FoundationCalculationTask.objects.get(calID=id)
@@ -68,8 +76,11 @@ def get_calc_result(request):
         }
     return ResponseResult(data=res).to_response()
 
+
 @api_view(["POST"])
-@permission_classes([AllowAny])  # 允许任何人访问
+@permission_classes([AllowAny])
+@authentication_classes([])
+@csrf_exempt
 def get_mesh_result(request):
     id = request.data['taskId']
     task = FoundationCalculationTask.objects.get(calID=id)
