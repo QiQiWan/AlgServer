@@ -199,10 +199,10 @@ class BoreHole(object):
         Soils = sorted(Soils, key=lambda i: i['interval']['top'])
         self.soils = Soils
 
-    def get_soil_by_deepth(self, deepth):
+    def get_soil_by_depth(self, depth):
         for item in self.soils:
-            if item['interval']['top'] <= deepth and \
-                item['interval']['bottom'] >= deepth:
+            if item['interval']['top'] <= depth and \
+                item['interval']['bottom'] >= depth:
                 return item['soil']
         return SoilMaterial('Water', 10, 1E9, 0, 0, True)
 
@@ -251,7 +251,7 @@ class UndergroundDiaphragmWall(object):
         """Initial the object of an underground diaphragm wall
 
         Args:
-            L (int): Deepth of the wall, unit: m
+            L (int): Depth of the wall, unit: m
             h (float): Thichness of the wall, unit: m
             E (int): Elastic modulus of the wall, unit: Pa
             v (float): Poisson's ratio of the wall: unit: None
@@ -475,6 +475,14 @@ class FoundationPit(object):
         self.Pa_lim_wr = self.right_wall.L * Palim
         self.Pp_lim_wr = self.right_wall.L * Pplim
     
+    @property
+    def left_wall_length(self):
+        return self.left_wall.L
+    
+    @property
+    def right_wall_length(self):    
+        return self.right_wall.L
+    
     def __str__(self) -> str:
         return """
         The foundation pit is excavated %dm on the left and %dm on the right,
@@ -484,10 +492,12 @@ class FoundationPit(object):
     
     @staticmethod
     def loads(instance: dict):
+        H1 = instance['ExcavaDepth']['LeftSide']
+        H2 = instance['ExcavaDepth']['RightSide']
         left_wall = UndergroundDiaphragmWall.loads(instance['LeftWall'])
         right_wall = UndergroundDiaphragmWall.loads(instance['RightWall'])
-        H1 = instance['H1']
-        H2 = instance['H2']
+        left_wall.set_H(H1)
+        right_wall.set_H(H2)
         supports = [HorizontalSupport.loads(i) for i in instance['Supports']]
         support_count = instance['SupportCount']
         ds = instance['ds']
@@ -511,7 +521,7 @@ class FoundationPit(object):
         obj['Supports'] = [i.to_dict() for i in self.supports]
         obj['BoreHole'] = self.bore_hole.to_dict()
         obj['AverageSoil'] = self.average_soil.to_dict()
-        obj['ExcaveDeepth'] = {
+        obj['ExcavaDepth'] = {
             "LeftSide": self.excave_depth[LRSide.LeftSide],
             "RightSide": self.excave_depth[LRSide.RightSide]
         }

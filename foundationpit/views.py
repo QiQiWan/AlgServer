@@ -8,6 +8,7 @@ Description:
 '''
 
 import json
+import time
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import api_view
@@ -24,8 +25,8 @@ def hello_world(request):
 def start_calc_task(request):
     if request.method == 'POST':
         data = request.body.decode('utf-8')
-        # params = json.loads(data)
-        analysor = AlgService.FoundationPitAnalysor(data)
+        params = json.loads(data)
+        analysor = AlgService.FoundationPitAnalysor(params['foundationPit'])
 
         # 存数据库
         id = AlgService.FoundationPitAnalysor.generate_cacl_id()
@@ -37,29 +38,64 @@ def start_calc_task(request):
         broadcast_service.publish('calculate', analysor, id)
         # _save_cal_result(analysor, id)
         dic = {
-            "task_result": "The results are still being calculated!",
-            "task_status": 1,
-            "task_id": id
+            "taskResult": "The results are still being calculated!",
+            "taskStatus": 1,
+            "taskId": id
         }
         return ResponseResult(data=dic).to_response()
     return ResponseResult(data=ResponseMsg.HTTP_METHOD_ERROR).to_response()
 
 @api_view(["POST"])
 def get_calc_result(request):
-    id = request.data['task_id']
+    id = request.data['taskId']
     task = FoundationCalculationTask.objects.get(calID=id)
     status = task.status
     if status == 1:
         res = {
-            "task_result" : "The results are still being calculated!",
-            "task_status": status,
-            "task_id": id
+            "taskResult" : "The results are still being calculated!",
+            "taskStatus": status,
+            "taskId": id
         }
     else:
         res = {
-            "task_result": json.loads(task.result),
-            "task_status": status,
-            "task_id": id
+            "taskResult": json.loads(task.result),
+            "taskStatus": status,
+            "taskId": id
+        }
+    return ResponseResult(data=res).to_response()
+
+@api_view(["POST"])
+def get_mesh_result(request):
+    id = request.data['taskId']
+    task = FoundationCalculationTask.objects.get(calID=id)
+    status = task.status
+    if status == 1:
+        res = {
+            "taskResult" : "The results are still being calculated!",
+            "taskStatus": status,
+            "ts": time.time(),
+            "taskId": id
+        }
+    if status == 2:
+        foundation_pit = json.loads(task.foundation_pit)['foundationPit']
+        L1 = foundation_pit['LeftWall']['L']    
+        L2 = foundation_pit['RightWall']['L']
+        result = json.loads(task.result)
+        wl = result['wl']
+        wr = result['wr']
+        sp_resolu = request.data['meta']['spaceResolu']
+        left_mesh_dict, right_mesh_dict = \
+            AlgService.FoundationPitAnalysor.create_mesh(L1, L2, wl, wr, sp_resolu)
+        
+        res = {
+            "ts": time.time(),
+            "meta": {
+                "spaceResolu": sp_resolu
+            },
+            "leftMesh": left_mesh_dict,
+            "rightMesh": right_mesh_dict,
+            "taskStatus": status,
+            "taskId": id
         }
     return ResponseResult(data=res).to_response()
 

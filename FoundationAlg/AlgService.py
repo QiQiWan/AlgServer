@@ -6,37 +6,36 @@ import time
 # Create your models here.
 class FoundationPitAnalysor(object):
 
-    def __init__(self, queries):
+    def __init__(self, params_dict):
         """生成一个基坑计算参数模型，调度计算任务，生成任务ID
 
         Args:
             queries (str): 基坑计算参数列表，是一个json文件
         """
-        params_dict = json.loads(queries)
         try:
-            self.check_params(params_dict)
+            foundation_pit = self.check_params(params_dict)
         except Exception as err:
             raise err
-        self.foundation_pit = self.create_foundation(params_dict)
+        self.foundation_pit = self.create_foundation(foundation_pit)
 
     def check_params(self, queries: dict):
         # 检查构造一个基坑对象所需要的所有参数
-        para_list = ['LeftWall', 'RightWall', 'H1', 'H2', 'ExcaveDeepth',\
-                    'SupportCount', 'Supports', 'B', 'D', 'BoreHole', 'AverageSoil',\
-                    'ds', 'Palim', 'Pplim', 'PalimWl', 'PplimWl', 'PalimWr', 'PplimWr',\
+        para_list = ['LeftWall', 'RightWall', 'ExcavaDepth',
+                    'SupportCount', 'Supports', 'B', 'D', 'BoreHole', 'AverageSoil',
+                    'ds', 'Palim', 'Pplim', 'PalimWl', 'PplimWl', 'PalimWr', 'PplimWr',
                     'LeftOverLoad', 'RightOverLoad', 'LeftStrengthLoad', 'RightStrengthLoad']
         for item in para_list:
             if item not in queries:
                 raise Exception(f'The argument {item} is not found!')
 
-        # 对某些复杂参数进行进一步检查
+        # 对水平支撑参数进行进一步检查
         support_list = ['Material', 'SpaceLength', 'N']
         for item in support_list:
             if item not in queries['Supports'][0]:
                 raise Exception(f'The arguement {item} in support is not found!')
 
         # 对两侧的支护桩参数进行检查
-        pile_list = ['L', 'h', 'Material', 'I', 'E', 'EI', 'kar', 'G', 'H']
+        pile_list = ['L', 'h', 'Material', 'I', 'EI', 'kar', 'G']
         for item in pile_list:
             if item not in queries['LeftWall']:
                 raise Exception(f'The argument {item} in LeftWall is not found!')
@@ -55,7 +54,7 @@ class FoundationPitAnalysor(object):
         if bottom < queries['LeftWall']['L'] or bottom < queries['RightWall']['L']:
             raise Exception(f'The bottom of the soil layers is less than the pile!')
         
-        return True
+        return queries
 
     def create_foundation(self, queries: dict):
         return FoundationPit.loads(queries)
@@ -65,16 +64,111 @@ class FoundationPitAnalysor(object):
         z = EnergyMethodSolver.init_symbol()
         solver = EnergyMethodSolver(z, self.foundation_pit, hm=hm)
         _, wl, wr = solver.solve()
+        cwl = {str(k): v for k, v in wl.as_coefficients_dict().items()}
+        cwr = {str(k): v for k, v in wr.as_coefficients_dict().items()}
         obj = {
             'ID': id,
             'L1': self.foundation_pit.left_wall.L,
             'L2': self.foundation_pit.right_wall.L,
-            'wl': dict(wl.as_coefficients_dict()),
-            'wr': dict(wr.as_coefficients_dict()),
+            'wl': dict(sorted(cwl.items())),
+            'wr': dict(sorted(cwr.items())),
             'symbol': str(z)
         }
         return self._save_cal_result(obj)
     
+    @staticmethod
+    def create_mesh(L1, L2, wl, wr, resolution: int):
+        L1 = L1
+        L2 = L2
+        zl_seq, left_center_column = FoundationPitAnalysor.cal_center_column(L1, wl, resolution)
+        zr_seq, right_center_column = FoundationPitAnalysor.cal_center_column(L2, wr, resolution)
+        
+        # Calculate the left and right expanded columns
+        expand_left_column = []
+        expand_right_column = []
+        half_reso = resolution // 2
+        # if odd
+        if resolution % 2 == 0:
+            half_reso -= 1
+
+        for i in range(half_reso):
+            dis = half_reso - i
+            coef_reduce = FoundationPitAnalysor.cal_distance_coeff(
+                FoundationPitAnalysor.parabola_distance_func, dis, resolution // 2)
+            new_left_column = []
+            new_right_column = []
+            for j in range(len(left_center_column)):
+                new_left_column.append(left_center_column[j] * coef_reduce)
+                new_right_column.append(right_center_column[j] * coef_reduce)
+
+            expand_left_column.append(new_left_column)
+            expand_right_column.append(new_right_column)
+        
+        expand_left_column.append(left_center_column)
+        expand_right_column.append(right_center_column)
+
+        if resolution % 2 == 0:
+            expand_left_column.append(left_center_column)
+            expand_right_column.append(right_center_column)
+
+        for i in range(half_reso):
+            expand_left_column.append(expand_left_column[half_reso - i - 1][:])
+            expand_right_column.append(expand_right_column[half_reso - i - 1][:])
+        
+        from numpy import array
+        expand_left_column = array(expand_left_column).transpose()
+        expand_right_column = array(expand_right_column).transpose()
+
+        left_mesh_dict = {
+            "mesh": expand_left_column.tolist(),
+            "z_seq": zl_seq,
+            "shape": expand_left_column.shape,
+            "maxDeformation": max(left_center_column),
+            "minDeformation": min(left_center_column)
+        }
+        right_mesh_dict = {
+            "mesh": expand_right_column.tolist(),
+            "z_seq": zr_seq,
+            "shape": expand_right_column.shape,
+            "maxDeformation": max(right_center_column),
+            "minDeformation": min(right_center_column)
+        }
+
+        return left_mesh_dict, right_mesh_dict
+    
+    @staticmethod
+    def cal_center_column(L: float, wf: dict, resolution: int):
+        center_column = []
+        z_seq = []
+        for i in range(resolution * 10):
+            x = i * L / resolution / 10
+            mutil = 1
+            defor = 0
+            wf_coeffs = wf.values()
+            for wf_coeff in wf_coeffs:
+                if defor == 0:
+                    defor += wf_coeff
+                else:
+                    mutil *= x
+                    defor += wf_coeff * mutil
+
+            center_column.append(defor)
+            z_seq.append(x)
+        z_seq[-1] = L
+        return z_seq, center_column
+    
+    @staticmethod
+    def cal_distance_coeff(func, dis: int, max_dis: int):
+        return func(dis / max_dis)
+    
+    @staticmethod
+    def linear_distance_func(x: float):
+        return -0.9 * x + 1
+    
+    @staticmethod
+    def parabola_distance_func(x: float):
+        return -0.9 * x * x + 1
+
     def _save_cal_result(self, obj: dict) -> str:
         dic = {}
         for key in obj:
