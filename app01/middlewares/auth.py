@@ -14,10 +14,11 @@ class AuthMiddleware(MiddlewareMixin):
         request.tracer = {"user": user}
         # 定义正则表达式匹配规则
         regex = r"^/admin/.*$"
+        regexAPI = r"^/foundationpit/.*"
         # 没有登录可以访问的内容（白名单）
         if request.path_info in settings.WHITE_REGEX_URL_LIST or re.match(
             regex, request.path_info
-        ):
+        ) or re.match(regexAPI, request.path_info):
             return
 
         # 检查用户是否已登录，如果未登录返回到登录界面

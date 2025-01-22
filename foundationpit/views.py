@@ -27,9 +27,6 @@ def hello_world(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
-@authentication_classes([])
-@csrf_exempt
 def start_calc_task(request):
     if request.method == 'POST':
         data = request.body.decode('utf-8')
@@ -55,9 +52,6 @@ def start_calc_task(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
-@authentication_classes([])
-@csrf_exempt
 def get_calc_result(request):
     id = request.data['taskId']
     task = FoundationCalculationTask.objects.get(calID=id)
@@ -78,9 +72,6 @@ def get_calc_result(request):
 
 
 @api_view(["POST"])
-@permission_classes([AllowAny])
-@authentication_classes([])
-@csrf_exempt
 def get_mesh_result(request):
     id = request.data['taskId']
     task = FoundationCalculationTask.objects.get(calID=id)
