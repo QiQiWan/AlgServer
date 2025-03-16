@@ -1,0 +1,112 @@
+{% extends 'layout/basic.html'%}
+{% load static %}
+{% block css %}
+<style>
+</style>
+{% endblock %}
+{% block content %}
+<!-- 模态框按钮 -->
+<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCategoryModal">
+    添加分类
+</button>
+<div id="categoryTags">
+    <!-- 已添加的分类标签将在这里显示 -->
+</div>
+<!-- 模态框 -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addCategoryModalLabel">添加分类</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- 输入关键词和选择分类的表单 -->
+                <form id="addCategoryForm">
+                    <div class="form-group">
+                        <label for="keywordInput">关键词：</label>
+                        <input type="text" class="form-control" id="search-input" placeholder="输入关键词">
+                        <ul id="autocomplete-list"></ul>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="addCategory()">添加</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block js %}
+<script>
+
+    function addCategory() {
+        var keyword = $('#search-input').val();
+
+
+        // 创建标签元素
+        var tag = $('<span class="tag is-warning is-small"></span>').text(keyword);
+
+        // 添加分类属性
+
+        // 创建删除按钮
+        var deleteBtn = $('<button>&times;</button>');
+        deleteBtn.addClass("delete is-small");
+        deleteBtn.click(function () {
+            $(this).parent().remove();
+        });
+
+        // 将标签和删除按钮添加到显示区域
+        tag.append(deleteBtn);
+        $('#categoryTags').append(tag);
+
+        // 清空输入框的值
+        $('#search-input').val('');
+
+        // 关闭模态框
+        $('#addCategoryModal').modal('hide');
+    }
+
+
+    const searchInput = document.getElementById('search-input');
+    const autocompleteList = document.getElementById('autocomplete-list');
+
+    // 模拟的关键词数据源
+    const keywords = ['苹果', '香蕉', '橙子', '葡萄', '西瓜', '菠萝', '苹果派'];
+
+    searchInput.addEventListener('input', () => {
+        const inputText = searchInput.value.trim();
+
+        // 清空自动补全列表
+        autocompleteList.innerHTML = '';
+
+        if (inputText) {
+            const matchingKeywords = keywords.filter(keyword =>
+                keyword.toLowerCase().includes(inputText.toLowerCase())
+            );
+
+            matchingKeywords.forEach(keyword => {
+                const li = document.createElement('li');
+                li.textContent = keyword;
+                autocompleteList.appendChild(li);
+            });
+        }
+    });
+
+    autocompleteList.addEventListener('click', event => {
+        if (event.target.tagName === 'LI') {
+            searchInput.value = event.target.textContent;
+            autocompleteList.innerHTML = '';
+        }
+    });
+</script>
+{% endblock %}
+{% block footer %}
+<div> </div>
+{% endblock %}

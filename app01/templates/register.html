@@ -1,0 +1,127 @@
+{% extends 'layout/basic.html'%}
+{% load static %}
+{% block title %}注册{% endblock %}
+{% block css %}
+<link rel="stylesheet" href="{% static 'css/account.css' %}">
+<style>
+    .title {
+        text-align: center;
+    }
+
+    #btnSubmit {
+        position: relative;
+        left: 35%;
+        background-image: linear-gradient(90deg, #e0c3fc 0%, #8ec5fc 100%);
+        letter-spacing: 5px;
+        border: none;
+    }
+
+    .account {
+        width: 400px;
+        padding: 35px;
+        top: -20px;
+        position: relative;
+        background: rgba(235, 231, 231, 0.5);
+        box-sizing: border-box;
+        box-shadow: 0px 25px 25px rgb(0, 0, 0, .5);
+        border-radius: 15px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="account">
+    <h3 class="title is-3">用户注册</h3>
+    <hr>
+    <form id="regForm" method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>用户名</label>
+            <div>{{ form.username }}
+                <span class="error-msg" style="color: red;">{{ form.username.errors.0 }}</span>
+            </div>
+
+        </div>
+        <div class="form-group">
+            <label>密码</label>
+            <div>{{ form.password }}
+                <span class="error-msg" style="color: red;">{{ form.password.errors.0 }}</span>
+            </div>
+
+        </div>
+        <div class="form-group">
+            <label>确认密码</label>
+            <div>{{ form.password_confirm }}
+                <span class="error-msg" style="color: red;">{{ form.password_confirm.errors.0 }}</span>
+            </div>
+
+        </div>
+        <div class="form-group">
+            <label for="id_code">图片验证码</label>
+            <div class="row">
+                <div class="col-xs-7">
+                    <div>{{ form.code }}
+                        <span class="error-msg" style="color: red;">{{ form.code.errors.0 }}</span>
+                    </div>
+
+                </div>
+                <div class="col-xs-5">
+                    <img id="imageCode" src="/img/code/" style="width: 125px;" title="点击更换图片">
+                </div>
+            </div>
+        </div>
+        <input id="btnSubmit" type="button" value="注 册" class="button is-primary is-rounded">
+    </form>
+</div>
+
+
+
+
+
+{% endblock %}
+{% block footer%}
+{% endblock %}
+
+{% block js %}
+<script>
+    $(function () {
+        $('#imageCode').click(function () {
+            var oldSrc = $(this).attr('src');
+            $(this).attr('src', oldSrc + "?");
+        })
+        bindClickSubmit();
+    });
+    //点击提交进行用户注册和数据校验
+    function bindClickSubmit() {
+        $('.error-msg').empty();
+        $('#btnSubmit').click(function () {
+            //收集表单中的数据
+            // $('#regForm').serialize()
+            //通过ajax发送到后端
+            $.ajax(
+                {
+                    url: "/register/",
+                    type: "POST",
+                    data: $('#regForm').serialize(),
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            location.href = res.data;
+                        }
+                        else {
+
+                            console.log(res);
+                            $.each(res.error, function (key, value) {
+                                $("#id_" + key).next().text(value[0]);
+                            })
+                        }
+                    }
+                }
+            )
+            //数据校验
+
+        })
+
+    }
+</script>
+
+{% endblock %}

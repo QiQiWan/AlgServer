@@ -1,0 +1,15 @@
+{  
+    "version": "2.0.0",  
+    "tasks": [  
+        {  
+            "label": "makemigrations",  
+            "type": "shell",  
+            "command": "bash", // 或者使用你的 shell，例如 "cmd", "powershell", "zsh" 等  
+            "args": [
+                "-c",
+                "python ${workspaceFolder}/manage.py makemigrations"
+            ],  
+            "problemMatcher": []  
+        }  
+    ]  
+}

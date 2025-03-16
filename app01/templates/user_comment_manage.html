@@ -1,0 +1,179 @@
+{% extends 'layout/profile.html' %}
+{% load static %}
+{% load tag %}
+{% block css %}
+<style>
+    .dropdown-content {
+        overflow: scroll;
+        height: 200px;
+        overflow-x: hidden;
+    }
+</style>
+
+{% endblock %}
+
+
+
+{% block title %}
+<li><a href="/account/info/">账号信息</a></li>
+<li><a href="/account/edit/">信息修改</a></li>
+<li class="is-active"><a href="/account/comment_manage/">评论管理</a></li>
+{% endblock %}
+{% block content %}
+<div class="modal" id="modal-showcloud">
+    <div class="modal-background"></div>
+    <div class="modal-content">
+        <p class="image is-4by3 cloudimg">
+            <img src="{{ MEDIA_URL }}cloudimg/{{img_url}}" alt="">
+        </p>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+</div>
+
+<div class="modal" id="modal-isdelete">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">确定要删除以下评论吗？</p>
+            <button class="delete" aria-label="close"></button>
+        </header>
+        <section class="modal-card-body deletebody">
+            <!-- Content ... -->
+        </section>
+        <footer class="modal-card-foot">
+            <button class="button is-danger btn_delete_confirm">确定</button>
+            <button class="button is-primary">取消</button>
+        </footer>
+    </div>
+</div>
+
+<div class="dropdown is-hoverable">
+    <div class="dropdown-trigger">
+        <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+            <span>{{article.title}}</span>
+            <span class="icon is-small">
+                <i class="fas fa-angle-down" aria-hidden="true"></i>
+            </span>
+        </button>
+    </div>
+    <div class="dropdown-menu" id="dropdown-menu" role="menu">
+        <div class="dropdown-content">
+
+            {% for item in articles %}
+            {% if item.title != article.title %}
+            <a href="{{urls|get_item:forloop.counter0}}" class="dropdown-item">
+                {{item.title}}
+            </a>
+            {% else %}
+
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+
+
+<div class="table-container">
+    <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
+        <thead>
+            <tr>
+                <th>序号</th>
+                <th>用户名</th>
+                <th>发布内容</th>
+                <th>发布时间</th>
+                <th>操作</th>
+
+            </tr>
+        </thead>
+        <tfoot>
+            <tr>
+                <th>序号</th>
+                <th>用户名</th>
+                <th>发布内容</th>
+                <th>发布时间</th>
+                <th>操作</th>
+            </tr>
+        </tfoot>
+        <tbody>
+            {% for comment in queryset %}
+            <tr>
+                <th>{{forloop.counter0}}</th>
+                <td class="user">{{comment.user}}</td>
+                <td class="content">{{comment.content}}</td>
+                <td>{{comment.create_time|date:"Y-m-d"}}</td>
+                <td><button class="js-modal-trigger button is-danger is-small comment_del" data-target="modal-isdelete"
+                        id="{{comment.id}}">删除</button></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+<ul class="pagination">
+    {{ page_string }}
+</ul>
+
+
+<button class="js-modal-trigger button is-primary coloud_create" data-target="modal-showcloud"
+    id="{{article.bv_code}}">生成云图</button>
+{% endblock %}
+{% block js %}
+<script>
+
+    $(function () {
+        btn_comment_del();//用于评论的删除
+        btn_cloud_create();//生成评论云图
+    });
+    function btn_comment_del() {
+        $(".comment_del").click(function () {
+            tr_element = $(this).parent().parent()
+            $content = tr_element.find(".content");
+            content = $content.text();
+            $reader = tr_element.find(".user");
+            reader = $reader.text();
+            $modal_body = $("#modal-isdelete").find(".deletebody");
+            html = "<div>" + "<strong>" + reader + "    :</strong>" + "<small>   " + content + "</small>";
+            $btn_delete_confirm = $("#modal-isdelete").find(".btn_delete_confirm");
+            id = $(this).attr("id");//获取对应评论的id
+            $modal_body.html(html);
+            $btn_delete_confirm.one("click", function () {
+                $btn_delete_confirm.off("click");
+            });
+            $btn_delete_confirm.click(function () {
+
+                $.ajax({
+                    url: "/comment/delete/",
+                    type: "POST",
+                    data: { "id": id },
+                    dataType: "JSON",
+                    success: function () {
+                        tr_element.remove();
+                    }
+                })
+            })
+        })
+    }
+    function btn_cloud_create() {
+        $(".coloud_create").click(function () {
+            bv_code = $(this).attr("id");//获取文章的bv_code
+            img_container = $("#modal-showcloud").find(".cloudimg");
+            regin = img_container.attr("src")
+            $.ajax({
+                url: "/comment/wordcloud/" + bv_code + "/",
+                type: "GET",
+                success: function (res) {
+
+                    console.log(res);
+
+
+
+                }
+            })
+        })
+
+    }
+
+
+</script>
+{% endblock %}

@@ -1,0 +1,62 @@
+name: Django test and deployment
+run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  SERVER_PUBLIC_KEY: ${{ secrets.SERVER_PUBLIC_KEY }} # 服务器公钥
+  SERVER_PRIVATE_KEY: ${{ secrets.SERVER_PRIVATE_KEY }} # 服务器私钥
+  SERVER_HOST: ${{ secrets.SERVER_HOST }} # 服务器IP地址
+  SERVER_PORT: ${{ secrets.SERVER_PORT }} # 服务器端口
+  USER_NAME: ${{ secrets.USER_NAME }} # 服务器用户名
+  SECRET_KEY: ${{ secrets.SECRET_KEY }} # django随机码
+  cache-name: note
+
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - name: clone the code repository
+        run: echo "The code is received by the repository, and the work flow will start."
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+      - run: echo "Installing the dependencies..."
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - run: echo "Install complete!"
+      - name: Run Tests
+        run: |
+          export SECRET_KEY="${{ env.SECRET_KEY }}"
+          python manage.py test foundationpit
+      - name: add public key and private key
+        run: |
+          mkdir ~/.ssh/
+          echo "${{ env.SERVER_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ env.SERVER_PUBLIC_KEY }}" > ~/.ssh/id_rsa.pub
+          echo "import keys complete!"
+      - name: push code to the server
+        run: |
+          git init
+          git config --global user.email i@eatrice.cn
+          git config --global user.name wqw
+          echo "starting push code"
+          git add ./
+          git commit -m "${{ github.event.head_commit.message }} Updated By Github Actions"
+          git push -f ubuntu@latex.eatrice.cn:/home/ubuntu/Algserver/algserver.git
+          echo "push completed!"
