@@ -71,8 +71,8 @@ def get_calc_result(request):
 
 @api_view(["GET"])
 def get_all_result(request):
-    page = request.GET.get('page', 1)
-    page_size = request.GET.get('pageSize', 10)
+    page = int(request.GET.get('page', 1))
+    page_size = int(request.GET.get('pageSize', 10))
     start_index = (page - 1) * page_size
     end_index = start_index + page_size
     tasks = FoundationCalculationTask.objects.all()
