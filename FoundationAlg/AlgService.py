@@ -89,7 +89,6 @@ class FoundationPitAnalysor(object):
         expand_right_column = FoundationPitAnalysor.create_mesh(L2, wr, zr_seq, 
                                                                        right_center_column,  resolution)
 
-
         left_mesh_dict = {
             "mesh": expand_left_column.tolist(),
             "z_seq": zl_seq,

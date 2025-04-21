@@ -50,8 +50,7 @@ def start_calc_task(request):
         return ResponseResult(data=dic).to_response()
     return ResponseResult(data=ResponseMsg.HTTP_METHOD_ERROR).to_response()
 
-
-@api_view(["POST"])
+@api_view(["GET"])
 def get_calc_result(request):
     id = request.data['taskId']
     task = FoundationCalculationTask.objects.get(calID=id)
@@ -70,6 +69,37 @@ def get_calc_result(request):
         }
     return ResponseResult(data=res).to_response()
 
+@api_view(["GET"])
+def get_all_result(request):
+    page = request.GET.get('page', 1)
+    page_size = request.GET.get('pageSize', 10)
+    start_index = (page - 1) * page_size
+    end_index = start_index + page_size
+    tasks = FoundationCalculationTask.objects.all()
+    end_index = min(end_index, len(tasks))
+    tasks_list = []
+    import time
+    for i in range(start_index, end_index):
+        status = "finished"
+        time_local = time.localtime(int(tasks[i].calID))
+        now = time.time()
+        if tasks[i].status == 1:
+            if now - int(tasks[i].calID) < 600000:
+                status = "calculating"
+            else:
+                status = "failed"
+        time_str = time.strftime("%Y-%m-%d %H:%M:%S", time_local)
+        task = {
+            "taskId": tasks[i].calID,
+            "taskType": "基坑围护结构热力图",
+            "time": time_str,
+            "status": status,
+        }
+        tasks_list.append(task)
+    res = {
+        "taskList": tasks_list
+    }
+    return ResponseResult(data=res).to_response()
 
 @api_view(["POST"])
 def get_mesh_result(request):
