@@ -123,6 +123,7 @@ class FoundationPitAnalysor(object):
     def create_mesh(L, w, seq, center_coulomn, resolution: int):
 
         expand_column = []
+        resolution = resolution * 10
         half_reso = resolution // 2
         if resolution % 2 == 0:
             half_reso -= 1
